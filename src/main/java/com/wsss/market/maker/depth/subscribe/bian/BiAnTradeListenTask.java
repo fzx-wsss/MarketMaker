@@ -3,10 +3,7 @@ package com.wsss.market.maker.depth.subscribe.bian;
 import com.wsss.market.maker.center.ConfigCenter;
 import com.wsss.market.maker.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.depth.subscribe.TradeListenTask;
-import com.wsss.market.maker.domain.Side;
-import com.wsss.market.maker.domain.Source;
-import com.wsss.market.maker.domain.SubscribedOrderBook;
-import com.wsss.market.maker.domain.SymbolInfo;
+import com.wsss.market.maker.domain.*;
 import com.wsss.market.maker.utils.HttpUtils;
 import com.wsss.market.maker.utils.JacksonMapper;
 import com.wsss.market.maker.utils.StringUtils;
@@ -22,6 +19,7 @@ import java.util.Map;
 public class BiAnTradeListenTask implements TradeListenTask {
     private SymbolInfo symbolInfo;
     private JsonNode json;
+    private static CacheMap<String, TradeLimiter> limiterCacheMap = new CacheMap<>(k->new TradeLimiter());
 
     public BiAnTradeListenTask(SymbolInfo symbolInfo, JsonNode json) {
         this.symbolInfo = symbolInfo;
@@ -31,7 +29,11 @@ public class BiAnTradeListenTask implements TradeListenTask {
     @Override
     public void logTrade() {
         try {
-            log.info("trade:{}",json);
+            if(limiterCacheMap.get(symbolInfo.getSymbol()).isLimit()) {
+//                log.info("disable trade");
+                return;
+            }
+//            log.info("trade:{}",json);
         } catch (Exception e) {
             log.error("error",e);
         }

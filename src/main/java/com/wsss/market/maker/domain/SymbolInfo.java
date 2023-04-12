@@ -3,7 +3,6 @@ package com.wsss.market.maker.domain;
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
 import com.wsss.market.maker.center.BootStrap;
-import com.wsss.market.maker.center.ConfigCenter;
 import com.wsss.market.maker.config.MakerConfig;
 import com.wsss.market.maker.config.SymbolConfig;
 import com.wsss.market.maker.depth.design.DesignType;
@@ -42,7 +41,7 @@ public class SymbolInfo {
     private MakerConfig makerConfig;
 
     private Map<String,BlockingQueue<DepthListenTask>> subscribedQueueMap = new CacheMap<>(k->new ArrayBlockingQueue<>(1000));
-    private Map<String,SubscribedOrderBook> subscribedOrderBookMap = new CacheMap<>(k->BootStrap.createSpringBean(SubscribedOrderBook.class,this));
+    private Map<String,SubscribedOrderBook> subscribedOrderBookMap = new CacheMap<>(k->BootStrap.getSpringBean(SubscribedOrderBook.class,this));
     private volatile long lastReceiveTime;
     private volatile MakerLimitPolicy limitPolicy;
     private volatile MakerDesignPolicy designPolicy;
@@ -52,7 +51,7 @@ public class SymbolInfo {
 
     public SymbolInfo(String symbol) {
         this.symbol = symbol;
-        this.ownerOrderBook = BootStrap.createSpringBean(OwnerOrderBook.class,this);
+        this.ownerOrderBook = BootStrap.getSpringBean(OwnerOrderBook.class,this);
     }
 
     @PostConstruct

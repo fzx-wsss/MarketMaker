@@ -3,6 +3,7 @@ package com.wsss.market.maker.config;
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
 import com.ctrip.framework.apollo.spring.annotation.ApolloConfig;
 import com.ctrip.framework.apollo.spring.annotation.ApolloJsonValue;
+import com.wsss.market.maker.center.BootStrap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,5 +29,9 @@ public class SymbolConfig {
 
     public String getTriangleSymbol(SymbolAoWithFeatureAndExtra symbolAo) {
         return triangleSymbols.get(symbolAo.getSymbolName());
+    }
+
+    public static SymbolConfig getInstance() {
+        return BootStrap.getSpringBean(SymbolConfig.class);
     }
 }

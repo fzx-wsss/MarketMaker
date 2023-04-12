@@ -36,7 +36,7 @@ public class DataCenter {
     }
 
     public void register(String symbol) {
-        SymbolInfo symbolInfo = symbolMap.computeIfAbsent(symbol, s -> BootStrap.createSpringBean(SymbolInfo.class, s));
+        SymbolInfo symbolInfo = symbolMap.computeIfAbsent(symbol, s -> BootStrap.getSpringBean(SymbolInfo.class, s));
         for(String child : symbolInfo.getChildSymbol()) {
             mappingMap.computeIfAbsent(child,k-> Sets.newConcurrentHashSet()).add(symbolInfo);
         }
@@ -51,7 +51,7 @@ public class DataCenter {
                 return;
             }
         }
-        BiAnDepthSubscriber depthSubscriber = BootStrap.createSpringBean(BiAnDepthSubscriber.class);
+        BiAnDepthSubscriber depthSubscriber = BootStrap.getSpringBean(BiAnDepthSubscriber.class);
         depthSubscribers.add(depthSubscriber);
         depthSubscriber.register(symbolInfo.getChildSymbol());
     }
@@ -62,7 +62,7 @@ public class DataCenter {
                 return;
             }
         }
-        BiAnTradeSubscriber tradeSubscriber = BootStrap.createSpringBean(BiAnTradeSubscriber.class);
+        BiAnTradeSubscriber tradeSubscriber = BootStrap.getSpringBean(BiAnTradeSubscriber.class);
         tradeSubscribers.add(tradeSubscriber);
         tradeSubscriber.register(symbolInfo.getChildSymbol());
     }

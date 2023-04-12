@@ -48,7 +48,7 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
         this.applicationContext = applicationContext;
     }
 
-    public static <T> T createSpringBean(Class<T> clazz, Object... args) {
+    public static <T> T getSpringBean(Class<T> clazz, Object... args) {
         DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
 //        if(!beanFactory.containsBeanDefinition(clazz.getSimpleName())) {
 //            BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder

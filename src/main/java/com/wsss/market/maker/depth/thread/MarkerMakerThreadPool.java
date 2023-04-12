@@ -44,7 +44,7 @@ public class MarkerMakerThreadPool {
     @PostConstruct
     public void init() {
         for (int i = 0; i< depthProcessThreads.length; i++) {
-            depthProcessThreads[i] = BootStrap.createSpringBean(DepthProcessThread.class);
+            depthProcessThreads[i] = BootStrap.getSpringBean(DepthProcessThread.class);
             Thread thread = new Thread(depthProcessThreads[i]);
             thread.setDaemon(true);
             thread.setName(String.format("DepthProcessThread-%s",i));
@@ -52,7 +52,7 @@ public class MarkerMakerThreadPool {
         }
 
         for (int i = 0; i< tradeProcessThreads.length; i++) {
-            tradeProcessThreads[i] = BootStrap.createSpringBean(TradeProcessThread.class);
+            tradeProcessThreads[i] = BootStrap.getSpringBean(TradeProcessThread.class);
             Thread thread = new Thread(tradeProcessThreads[i]);
             thread.setDaemon(true);
             thread.setName(String.format("TradeProcessThread-%s",i));

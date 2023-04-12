@@ -1,8 +1,6 @@
 package com.wsss.market.maker.depth.design;
 
 import com.wsss.market.maker.center.BootStrap;
-import com.wsss.market.maker.depth.limit.LimitType;
-import com.wsss.market.maker.depth.limit.MakerLimitPolicy;
 import com.wsss.market.maker.domain.CacheMap;
 import com.wsss.market.maker.domain.SymbolInfo;
 
@@ -12,7 +10,7 @@ public enum DesignType {
     FOLLOW {
         @Override
         public MakerDesignPolicy createMakerDesignPolicy(SymbolInfo symbolInfo) {
-            return BootStrap.createSpringBean(FollowMakerDesignPolicy.class,symbolInfo);
+            return BootStrap.getSpringBean(FollowMakerDesignPolicy.class,symbolInfo);
         }
     },
     TRIANGLE {
