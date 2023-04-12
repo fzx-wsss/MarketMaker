@@ -1,0 +1,51 @@
+server:
+  port: 9090
+  servlet:
+    context-path: /
+tomcat:
+  remote-ip-header: x-forward-for
+  uri-encoding: UTF-8
+  max-threads: 10
+  background-processor-delay: 30
+spring:
+  application:
+    name: marketMaker
+  http:
+    encoding:
+      force: true
+      charset: UTF-8
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+logging:
+  level:
+    root: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,prometheus,shutdown
+      base-path: /actuator
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+        descriptions: true
+  server:
+    port: 18090
+  endpoint:
+    shutdown:
+      enabled: true
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+apollo:
+  bootstrap:
+    eagerLoad:
+      enabled: true
+    enabled: true
