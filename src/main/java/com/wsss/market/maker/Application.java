@@ -10,7 +10,6 @@ import org.springframework.context.annotation.ComponentScan;
 public class Application {
     public static void main(String[] args) {
         // curl -X POST -i http://localhost:18090/themis/actuator/shutdown
-        // 关机命令
         SpringApplication.run(Application.class);
     }
 }
