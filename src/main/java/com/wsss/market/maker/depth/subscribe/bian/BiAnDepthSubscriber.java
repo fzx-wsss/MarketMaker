@@ -1,10 +1,12 @@
 package com.wsss.market.maker.depth.subscribe.bian;
 
 import com.cmcm.finance.common.util.JsonUtil;
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.config.BiAnConfig;
 import com.wsss.market.maker.domain.CacheMap;
 import com.wsss.market.maker.domain.SymbolInfo;
 import com.wsss.market.maker.utils.JacksonMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -13,8 +15,9 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Component
 @Scope("prototype")
 public class BiAnDepthSubscriber extends BiAnAbstractSubscriber {
@@ -39,6 +42,7 @@ public class BiAnDepthSubscriber extends BiAnAbstractSubscriber {
         });
         try {
             String sendMsg = JsonUtil.encode(msg);
+            log.info("bi an sendMsg:{}",sendMsg);
             wsClient.send(sendMsg);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -48,6 +52,10 @@ public class BiAnDepthSubscriber extends BiAnAbstractSubscriber {
 
     @Override
     protected void notifyProcessThread(SymbolInfo symbolInfo, String childSymbolName, JsonNode data) {
+        Monitor.counter("bi_an_receive_depth_msg").end();
+        if(symbolInfo.isDebugLog()) {
+            log.info("bi_an_receive_depth_msg:{}",data);
+        }
         // 按子币对创建任务，同步订单簿
         BiAnDepthListenTask task = new BiAnDepthListenTask(symbolInfo,data,symbolInfo.getChildSubscribedOrderBook(childSymbolName));
         symbolInfo.putDepthListenTask(childSymbolName,task);

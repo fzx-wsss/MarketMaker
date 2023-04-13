@@ -42,7 +42,10 @@ public class DesignOrderTask implements Runnable {
                 orderBook.update(order, Operation.CANCEL);
             }
 
-//            log.info("placeOrderList size:{},cancelOrderList size:{}",placeOrderList.size(),cancelOrderList.size());
+            if(symbolInfo.isDebugLog()) {
+                log.info("placeOrderList size:{},cancelOrderList size:{}",placeOrderList.size(),cancelOrderList.size());
+            }
+
         }catch (Exception e) {
             log.error("error",e);
         }

@@ -8,9 +8,11 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.util.CharsetUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 
+@Slf4j
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
 
     //握手的状态信息
@@ -30,9 +32,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<FullHttp
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpResponse msg) throws Exception {
-        System.out.println("当前握手的状态" + this.handshaker.isHandshakeComplete());
         Channel ch = ctx.channel();
-        System.out.println("服务端的消息" + msg.content().toString(CharsetUtil.UTF_8));
+        log.info("服务端的消息" + msg.content().toString(CharsetUtil.UTF_8));
         //进行握手操作
         if (!this.handshaker.isHandshakeComplete()) {
             try {
@@ -40,7 +41,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<FullHttp
                 this.handshaker.finishHandshake(ch, msg);
                 //设置成功
                 this.handshakeFuture.setSuccess();
-                System.out.println("服务端的消息" + msg.headers());
             } catch (WebSocketHandshakeException var7) {
                 var7.printStackTrace();
             }
@@ -55,33 +55,10 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<FullHttp
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("与服务端连接成功");
+        log.info("与服务端连接成功:{}",ctx.channel().id());
         this.handshaker.handshake(ctx.channel());
     }
 
-    /**
-     * 非活跃状态，没有连接远程主机的时候。
-     *
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("主机关闭");
-    }
-
-    /**
-     * 异常处理
-     *
-     * @param ctx
-     * @param cause
-     * @throws Exception
-     */
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.out.println("连接异常：" + cause.getMessage());
-        cause.printStackTrace();
-        ctx.close();
-    }
 
     public void handlerAdded(ChannelHandlerContext ctx) {
         this.handshakeFuture = ctx.newPromise();

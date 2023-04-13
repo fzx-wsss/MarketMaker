@@ -45,6 +45,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if(!nettyWSClient.isClose()) {
+            log.warn("连接断开:{}",ctx.channel().id());
+            wsListener.inactive();
             nettyWSClient.reConnect();
         }
         super.channelInactive(ctx);

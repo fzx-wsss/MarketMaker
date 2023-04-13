@@ -49,8 +49,8 @@ public class SymbolInfo {
     private OwnerOrderBook ownerOrderBook;
     private UserBBO userBBO;
 
-    public SymbolInfo(String symbol) {
-        this.symbol = symbol;
+    public SymbolInfo(SymbolAoWithFeatureAndExtra symbolAo) {
+        this.symbol = symbolAo.getSymbolName();
         this.ownerOrderBook = BootStrap.getSpringBean(OwnerOrderBook.class,this);
     }
 
@@ -118,5 +118,9 @@ public class SymbolInfo {
 
     public SubscribedOrderBook getChildSubscribedOrderBook(String childSymbol) {
         return subscribedOrderBookMap.get(childSymbol);
+    }
+
+    public boolean isDebugLog() {
+        return symbolConfig.getDebugSymbols().contains(symbol);
     }
 }

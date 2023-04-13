@@ -1,5 +1,6 @@
 package com.wsss.market.maker.depth.thread;
 
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.center.ConfigCenter;
 import com.wsss.market.maker.center.DataCenter;
 import com.wsss.market.maker.config.MakerConfig;
@@ -33,9 +34,11 @@ public class DepthProcessThread implements Runnable {
 
     @Override
     public void run() {
+        Monitor.TimeContext timeContext = null;
         while (true) {
             try {
                 String symbol = queue.take();
+                timeContext = Monitor.timer("depth_process_thread");
                 SymbolInfo symbolInfo = dataCenter.getSymbolInfo(symbol);
                 transferOrderBook(symbolInfo);
                 // 是否重新摆盘订单
@@ -61,6 +64,8 @@ public class DepthProcessThread implements Runnable {
                 markerMakerThreadPool.execDesignOrderTask(orderTask);
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                timeContext.end();
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.wsss.market.maker.depth.subscribe.bian;
 
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.center.DataCenter;
 import com.wsss.market.maker.depth.thread.MarkerMakerThreadPool;
 import com.wsss.market.maker.domain.SymbolInfo;
@@ -8,6 +9,7 @@ import com.wsss.market.maker.ws.WSClient;
 import com.wsss.market.maker.ws.WSListener;
 import com.wsss.market.maker.ws.netty.NettyWSClient;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;
 
 import javax.annotation.PostConstruct;
@@ -15,11 +17,10 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 public abstract class BiAnAbstractSubscriber {
 
     @Resource
@@ -29,12 +30,14 @@ public abstract class BiAnAbstractSubscriber {
 
     protected WSClient wsClient;
     @Getter
-    protected Set<String> subscribedSymbol = new HashSet<>();
+    protected Set<SymbolInfo> subscribedSymbol = new HashSet<>();
 
     @PostConstruct
     public void init() {
         try {
             wsClient = NettyWSClient.builder().websocketURI(new URI(getSteamUrl())).wsListener(getWSListener()).build();
+            wsClient.connect();
+            log.info("subscriber url:{}",getSteamUrl());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -42,18 +45,15 @@ public abstract class BiAnAbstractSubscriber {
 
     protected abstract String getSteamUrl();
 
-    public void connect() {
-        wsClient.connect();
-    }
-
-    public boolean register(List<String> symbol) {
+    public boolean register(List<SymbolInfo> symbolInfoList) {
+        if(symbolInfoList.isEmpty()) {
+            return true;
+        }
         try {
-            if (!wsClient.isAlive()) {
-                connect();
-            }
-            doRegister(symbol);
+            List<String> symbols = symbolInfoList.stream().map(s->s.getChildSymbol()).flatMap(list->list.stream()).collect(Collectors.toList());
+            doRegister(symbols);
         } finally {
-            subscribedSymbol.addAll(symbol);
+            subscribedSymbol.addAll(symbolInfoList);
         }
         return true;
     }
@@ -86,10 +86,12 @@ public abstract class BiAnAbstractSubscriber {
             try {
                 JsonNode root = JacksonMapper.getInstance().readTree(msg);
                 if (!root.has("stream")) {
+                    log.warn("receive unknown msg: {}",root);
                     return;
                 }
                 String childSymbolName = convertSymbolName(root.get("stream").asText());
                 JsonNode data = root.get("data");
+
                 dataCenter.getMappingSymbolInfo(childSymbolName).forEach(symbolInfo -> {
                     notifyProcessThread(symbolInfo,childSymbolName,data);
                 });
@@ -100,6 +102,16 @@ public abstract class BiAnAbstractSubscriber {
 
         @Override
         public void receive(byte[] msg) {
+
+        }
+
+        @Override
+        public void success() {
+            register(new ArrayList<>(subscribedSymbol));
+        }
+
+        @Override
+        public void inactive() {
 
         }
     }

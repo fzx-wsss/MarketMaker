@@ -1,6 +1,9 @@
 package com.wsss.market.maker.center;
 
+import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
+import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
 import com.wsss.market.maker.config.BiAnConfig;
+import com.wsss.market.maker.config.SymbolConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
@@ -13,6 +16,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -22,6 +27,11 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
     private BiAnConfig biAnConfig;
     @Resource
     private DataCenter dataCenter;
+    @Resource
+    private SymbolConfig symbolConfig;
+    @Resource
+    private CoinConfigCenterClient coinConfigCenterClient;
+
     private static ApplicationContext applicationContext;
     @Override
     public void destroy() throws Exception {
@@ -40,7 +50,12 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
         }
         log.info("启动应用");
         start = true;
-        dataCenter.register("xrpusdt");
+
+        List<SymbolAoWithFeatureAndExtra> list = symbolConfig.getSupportSymbols().stream()
+                .map(s->coinConfigCenterClient.getSymbolInfoByName(s))
+                .filter(s->s != null)
+                .collect(Collectors.toList());
+        dataCenter.register(list);
     }
 
     @Override

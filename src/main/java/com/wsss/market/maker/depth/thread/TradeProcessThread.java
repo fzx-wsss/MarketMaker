@@ -1,5 +1,6 @@
 package com.wsss.market.maker.depth.thread;
 
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.center.DataCenter;
 import com.wsss.market.maker.config.MakerConfig;
 import com.wsss.market.maker.depth.design.MakerDesignPolicy;
@@ -29,12 +30,16 @@ public class TradeProcessThread implements Runnable {
 
     @Override
     public void run() {
+        Monitor.TimeContext timeContext = null;
         while (true) {
             try {
                 TradeListenTask tradeTask = queue.take();
+                timeContext = Monitor.timer("trade_process_thread");
                 tradeTask.logTrade();
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                timeContext.end();
             }
         }
     }

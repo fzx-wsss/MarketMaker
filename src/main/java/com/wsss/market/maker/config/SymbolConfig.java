@@ -10,11 +10,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Component
 public class SymbolConfig {
-    @ApolloJsonValue("${market.maker.mapping.symbols:{\"xrpusdt\":\"btcusdt\"}}")
+    @Getter
+    @ApolloJsonValue("${market.maker.support.symbols:[\"btcusdt\",\"ethusdt\",\"xrpusdt\",\"etcbtc\",\"bchbtc\",\"ltcbtc\"]}")
+    private Set<String> supportSymbols;
+    @Getter
+    @ApolloJsonValue("${market.maker.debug.symbols:[\"btcusdt\"]}")
+    private Set<String> debugSymbols;
+    @ApolloJsonValue("${market.maker.mapping.symbols:{}}")
     private Map<String,String> mappingSymbols;
     @ApolloJsonValue("${market.maker.triangle.symbols:{}}")
     private Map<String,String> triangleSymbols;

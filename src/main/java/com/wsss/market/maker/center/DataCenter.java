@@ -1,17 +1,23 @@
 package com.wsss.market.maker.center;
 
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
+import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.wsss.market.maker.config.SymbolConfig;
 import com.wsss.market.maker.depth.subscribe.bian.BiAnTradeSubscriber;
 import com.wsss.market.maker.domain.SymbolInfo;
 import com.wsss.market.maker.depth.subscribe.bian.BiAnDepthSubscriber;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class DataCenter {
     @Resource
@@ -35,36 +41,79 @@ public class DataCenter {
         return symbolMap.get(symbol);
     }
 
-    public void register(String symbol) {
-        SymbolInfo symbolInfo = symbolMap.computeIfAbsent(symbol, s -> BootStrap.getSpringBean(SymbolInfo.class, s));
-        for(String child : symbolInfo.getChildSymbol()) {
-            mappingMap.computeIfAbsent(child,k-> Sets.newConcurrentHashSet()).add(symbolInfo);
-        }
+    public void register(List<SymbolAoWithFeatureAndExtra> symbolAos) {
+        List<String> symbolNames = symbolAos.stream().map(s->s.getSymbolName()).collect(Collectors.toList());
+        log.info("register symbol:{}", symbolNames);
+        List<SymbolInfo> symbolInfos = symbolAos.stream().map(s->{
+            SymbolInfo symbolInfo = symbolMap.computeIfAbsent(s.getSymbolName(), k -> BootStrap.getSpringBean(SymbolInfo.class, s));
+            for (String child : symbolInfo.getChildSymbol()) {
+                mappingMap.computeIfAbsent(child, k -> Sets.newConcurrentHashSet()).add(symbolInfo);
+            }
+            return symbolInfo;
+        }).collect(Collectors.toList());
 
-        registerDepth(symbolInfo);
-        registerTrade(symbolInfo);
+
+        registerDepth(symbolInfos);
+        registerTrade(symbolInfos);
     }
 
-    private void registerDepth(SymbolInfo symbolInfo) {
-        for (BiAnDepthSubscriber subscriber : depthSubscribers) {
-            if (subscriber.getSubscribedSymbol().size() < symbolConfig.getGroupSize() && subscriber.register(symbolInfo.getChildSymbol())) {
-                return;
+    private void registerDepth(List<SymbolInfo> symbolInfos) {
+        int groupSize = symbolConfig.getGroupSize();
+        while (!symbolInfos.isEmpty()) {
+            for (BiAnDepthSubscriber subscriber : depthSubscribers) {
+                int available = groupSize - subscriber.getSubscribedSymbol().size();
+                if (available <= 0) {
+                    continue;
+                }
+                List<SymbolInfo> registers = subList(symbolInfos, 0, available);
+                symbolInfos = subList(symbolInfos, available, symbolInfos.size());
+                subscriber.register(registers);
             }
+            break;
         }
-        BiAnDepthSubscriber depthSubscriber = BootStrap.getSpringBean(BiAnDepthSubscriber.class);
-        depthSubscribers.add(depthSubscriber);
-        depthSubscriber.register(symbolInfo.getChildSymbol());
+        while (!symbolInfos.isEmpty()) {
+            BiAnDepthSubscriber depthSubscriber = BootStrap.getSpringBean(BiAnDepthSubscriber.class);
+            depthSubscribers.add(depthSubscriber);
+            List<SymbolInfo> registers = subList(symbolInfos, 0, groupSize);
+            symbolInfos = subList(symbolInfos, groupSize, symbolInfos.size());
+            depthSubscriber.register(registers);
+        }
     }
 
-    private void registerTrade(SymbolInfo symbolInfo) {
-        for (BiAnTradeSubscriber subscriber : tradeSubscribers) {
-            if (subscriber.getSubscribedSymbol().size() < symbolConfig.getGroupSize() && subscriber.register(symbolInfo.getChildSymbol())) {
-                return;
-            }
+    private List<SymbolInfo> subList(List<SymbolInfo> list, int start, int end) {
+        if (start >= list.size()) {
+            return Collections.EMPTY_LIST;
         }
-        BiAnTradeSubscriber tradeSubscriber = BootStrap.getSpringBean(BiAnTradeSubscriber.class);
-        tradeSubscribers.add(tradeSubscriber);
-        tradeSubscriber.register(symbolInfo.getChildSymbol());
+        if (end > list.size()) {
+            return list;
+        }
+        return list.subList(start, end);
+    }
+
+
+
+    private void registerTrade(List<SymbolInfo> symbolInfos) {
+        int groupSize = symbolConfig.getGroupSize();
+
+        while (!symbolInfos.isEmpty()) {
+            for (BiAnTradeSubscriber subscriber : tradeSubscribers) {
+                int available = groupSize - subscriber.getSubscribedSymbol().size();
+                if (available <= 0) {
+                    continue;
+                }
+                List<SymbolInfo> registers = subList(symbolInfos, 0, available);
+                symbolInfos = subList(symbolInfos, available, symbolInfos.size());
+                subscriber.register(registers);
+            }
+            break;
+        }
+        while (!symbolInfos.isEmpty()) {
+            BiAnTradeSubscriber tradeSubscriber = BootStrap.getSpringBean(BiAnTradeSubscriber.class);
+            tradeSubscribers.add(tradeSubscriber);
+            List<SymbolInfo> registers = subList(symbolInfos, 0, groupSize);
+            symbolInfos = subList(symbolInfos, groupSize, symbolInfos.size());
+            tradeSubscriber.register(registers);
+        }
     }
 
     public Set<SymbolInfo> getMappingSymbolInfo(String symbol) {

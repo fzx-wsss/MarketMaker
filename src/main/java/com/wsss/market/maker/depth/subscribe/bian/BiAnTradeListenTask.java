@@ -1,5 +1,6 @@
 package com.wsss.market.maker.depth.subscribe.bian;
 
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.center.ConfigCenter;
 import com.wsss.market.maker.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.depth.subscribe.TradeListenTask;
@@ -33,7 +34,10 @@ public class BiAnTradeListenTask implements TradeListenTask {
 //                log.info("disable trade");
                 return;
             }
-//            log.info("trade:{}",json);
+            Monitor.counter("bi_an_real_trade_msg").end();
+            if(symbolInfo.isDebugLog()) {
+                log.info("trade:{}",json);
+            }
         } catch (Exception e) {
             log.error("error",e);
         }

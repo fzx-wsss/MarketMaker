@@ -72,10 +72,11 @@ public class NettyWSClient implements WSClient {
             boot.connect(websocketURI.getHost(), websocketURI.getPort()).sync();
             //阻塞等待是否握手成功
             channel = WebSocketClientHandler.handshakeFuture.sync().channel();
-            log.info("连接成功:{}",websocketURI.getHost());
+            log.info("WS连接成功:{},id:{}",websocketURI.getHost(),channel.id());
+            wsListener.success();
         } catch (Exception e) {
             reConnect();
-            throw new RuntimeException(e);
+            log.error("连接异常:{}",e);
         }
 
     }

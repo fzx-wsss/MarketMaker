@@ -11,4 +11,14 @@ public class EmptyWSListener implements WSListener {
     public void receive(byte[] msg) {
 
     }
+
+    @Override
+    public void success() {
+
+    }
+
+    @Override
+    public void inactive() {
+
+    }
 }

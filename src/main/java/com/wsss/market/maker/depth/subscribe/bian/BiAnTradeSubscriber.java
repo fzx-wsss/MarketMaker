@@ -1,10 +1,12 @@
 package com.wsss.market.maker.depth.subscribe.bian;
 
 import com.cmcm.finance.common.util.JsonUtil;
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.config.BiAnConfig;
 import com.wsss.market.maker.domain.CacheMap;
 import com.wsss.market.maker.domain.SymbolInfo;
 import com.wsss.market.maker.utils.JacksonMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -13,7 +15,9 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+@Slf4j
 @Component
 @Scope("prototype")
 public class BiAnTradeSubscriber extends BiAnAbstractSubscriber {
@@ -37,6 +41,7 @@ public class BiAnTradeSubscriber extends BiAnAbstractSubscriber {
         });
         try {
             String sendMsg = JsonUtil.encode(msg);
+            log.info("bi an sendMsg:{}",sendMsg);
             wsClient.send(sendMsg);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -45,6 +50,10 @@ public class BiAnTradeSubscriber extends BiAnAbstractSubscriber {
 
     @Override
     protected void notifyProcessThread(SymbolInfo symbolInfo, String childSymbolName, JsonNode data) {
+        Monitor.counter("bi_an_receive_trade_msg").end();
+        if(symbolInfo.isDebugLog()) {
+            log.info("bi_an_receive_trade_msg:{}",data);
+        }
         // 按主币对划分执行线程
         BiAnTradeListenTask task = new BiAnTradeListenTask(symbolInfo,data);
         markerMakerThreadPool.getTradeProcessThread(symbolInfo.getSymbol()).offer(task);
