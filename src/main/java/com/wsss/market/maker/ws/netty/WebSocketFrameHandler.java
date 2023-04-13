@@ -40,6 +40,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
 
+        log.info("receive unknown webSocketFrame:{}",msg.getClass());
     }
 
     @Override
