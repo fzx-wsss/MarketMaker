@@ -2,6 +2,8 @@ package com.wsss.market.maker.center;
 
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
+import com.ctrip.framework.apollo.model.ConfigChangeEvent;
+import com.ctrip.framework.apollo.spring.annotation.ApolloConfigChangeListener;
 import com.wsss.market.maker.config.BiAnConfig;
 import com.wsss.market.maker.config.SymbolConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,11 +54,19 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
         log.info("启动应用");
         start = true;
 
-        List<SymbolAoWithFeatureAndExtra> list = symbolConfig.getSupportSymbols().stream()
-                .map(s->coinConfigCenterClient.getSymbolInfoByName(s))
-                .filter(s->s != null)
-                .collect(Collectors.toList());
-        dataCenter.register(list);
+        reload();
+    }
+
+    public void reload() {
+        Set<String> set = coinConfigCenterClient.getAllSymbolInfo().stream()
+                .filter(s->symbolConfig.getSupportSymbols().contains(s.getSymbolName()))
+                .map(s->s.getSymbolName())
+                .collect(Collectors.toSet());
+
+        Set<String> add = set.stream().filter(s->!dataCenter.isRegistered(s)).collect(Collectors.toSet());
+        Set<String> remove = dataCenter.registeredSymbols().stream().filter(s->!set.contains(s)).collect(Collectors.toSet());
+        dataCenter.register(add);
+        dataCenter.remove(remove);
     }
 
     @Override

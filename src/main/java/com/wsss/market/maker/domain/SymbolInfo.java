@@ -49,8 +49,8 @@ public class SymbolInfo {
     private OwnerOrderBook ownerOrderBook;
     private UserBBO userBBO;
 
-    public SymbolInfo(SymbolAoWithFeatureAndExtra symbolAo) {
-        this.symbol = symbolAo.getSymbolName();
+    public SymbolInfo(String symbol) {
+        this.symbol = symbol;
         this.ownerOrderBook = BootStrap.getSpringBean(OwnerOrderBook.class,this);
     }
 

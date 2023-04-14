@@ -33,7 +33,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<FullHttp
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpResponse msg) throws Exception {
         Channel ch = ctx.channel();
-        log.info("服务端的消息" + msg.content().toString(CharsetUtil.UTF_8));
+        log.info("服务端的消息:{}", msg.content().toString(CharsetUtil.UTF_8));
         //进行握手操作
         if (!this.handshaker.isHandshakeComplete()) {
             try {

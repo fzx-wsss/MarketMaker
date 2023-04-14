@@ -41,23 +41,66 @@ public class DataCenter {
         return symbolMap.get(symbol);
     }
 
-    public void register(List<SymbolAoWithFeatureAndExtra> symbolAos) {
-        List<String> symbolNames = symbolAos.stream().map(s->s.getSymbolName()).collect(Collectors.toList());
+    public synchronized void register(Set<String> symbolNames) {
         log.info("register symbol:{}", symbolNames);
-        List<SymbolInfo> symbolInfos = symbolAos.stream().map(s->{
-            SymbolInfo symbolInfo = symbolMap.computeIfAbsent(s.getSymbolName(), k -> BootStrap.getSpringBean(SymbolInfo.class, s));
-            for (String child : symbolInfo.getChildSymbol()) {
-                mappingMap.computeIfAbsent(child, k -> Sets.newConcurrentHashSet()).add(symbolInfo);
+        List<String> childList = new ArrayList<>();
+        symbolNames.stream().forEach(s->{
+            if(symbolMap.containsKey(s)) {
+                return;
             }
-            return symbolInfo;
-        }).collect(Collectors.toList());
+            SymbolInfo symbolInfo = BootStrap.getSpringBean(SymbolInfo.class, s);
+            symbolMap.put(s, symbolInfo);
+
+            for (String child : symbolInfo.getChildSymbol()) {
+                Set set = mappingMap.computeIfAbsent(child, k -> Sets.newConcurrentHashSet());
+                if(set.isEmpty()) {
+                    childList.add(child);
+                }
+                set.add(symbolInfo);
+            }
+        });
 
 
-        registerDepth(symbolInfos);
-        registerTrade(symbolInfos);
+        registerDepth(childList);
+        registerTrade(childList);
     }
 
-    private void registerDepth(List<SymbolInfo> symbolInfos) {
+    public synchronized void remove(Set<String> symbolNames) {
+        log.info("remove symbol:{}", symbolNames);
+        Set<String> childList = new HashSet<>();
+        symbolNames.forEach(s -> {
+            if (!symbolMap.containsKey(s)) {
+                return;
+            }
+            SymbolInfo symbolInfo = symbolMap.remove(s);
+
+            for (String child : symbolInfo.getChildSymbol()) {
+                Set<SymbolInfo> set = mappingMap.get(child);
+                set.remove(symbolInfo);
+                if (set.isEmpty()) {
+                    mappingMap.remove(child);
+                    childList.add(child);
+                }
+            }
+        });
+
+        removeDepth(childList);
+        removeTrade(childList);
+    }
+
+    private void removeDepth(Set<String> symbolInfos) {
+        for (BiAnDepthSubscriber subscriber : depthSubscribers) {
+            subscriber.remove(symbolInfos);
+        }
+    }
+
+    private void removeTrade(Set<String> symbolInfos) {
+        for (BiAnTradeSubscriber subscriber : tradeSubscribers) {
+            subscriber.remove(symbolInfos);
+        }
+    }
+
+    private void registerDepth(List<String> symbolInfos) {
         int groupSize = symbolConfig.getGroupSize();
         while (!symbolInfos.isEmpty()) {
             for (BiAnDepthSubscriber subscriber : depthSubscribers) {
@@ -65,7 +108,7 @@ public class DataCenter {
                 if (available <= 0) {
                     continue;
                 }
-                List<SymbolInfo> registers = subList(symbolInfos, 0, available);
+                List<String> registers = subList(symbolInfos, 0, available);
                 symbolInfos = subList(symbolInfos, available, symbolInfos.size());
                 subscriber.register(registers);
             }
@@ -74,13 +117,13 @@ public class DataCenter {
         while (!symbolInfos.isEmpty()) {
             BiAnDepthSubscriber depthSubscriber = BootStrap.getSpringBean(BiAnDepthSubscriber.class);
             depthSubscribers.add(depthSubscriber);
-            List<SymbolInfo> registers = subList(symbolInfos, 0, groupSize);
+            List<String> registers = subList(symbolInfos, 0, groupSize);
             symbolInfos = subList(symbolInfos, groupSize, symbolInfos.size());
             depthSubscriber.register(registers);
         }
     }
 
-    private List<SymbolInfo> subList(List<SymbolInfo> list, int start, int end) {
+    private List<String> subList(List<String> list, int start, int end) {
         if (start >= list.size()) {
             return Collections.EMPTY_LIST;
         }
@@ -92,7 +135,7 @@ public class DataCenter {
 
 
 
-    private void registerTrade(List<SymbolInfo> symbolInfos) {
+    private void registerTrade(List<String> symbolInfos) {
         int groupSize = symbolConfig.getGroupSize();
 
         while (!symbolInfos.isEmpty()) {
@@ -101,7 +144,7 @@ public class DataCenter {
                 if (available <= 0) {
                     continue;
                 }
-                List<SymbolInfo> registers = subList(symbolInfos, 0, available);
+                List<String> registers = subList(symbolInfos, 0, available);
                 symbolInfos = subList(symbolInfos, available, symbolInfos.size());
                 subscriber.register(registers);
             }
@@ -110,13 +153,21 @@ public class DataCenter {
         while (!symbolInfos.isEmpty()) {
             BiAnTradeSubscriber tradeSubscriber = BootStrap.getSpringBean(BiAnTradeSubscriber.class);
             tradeSubscribers.add(tradeSubscriber);
-            List<SymbolInfo> registers = subList(symbolInfos, 0, groupSize);
+            List<String> registers = subList(symbolInfos, 0, groupSize);
             symbolInfos = subList(symbolInfos, groupSize, symbolInfos.size());
             tradeSubscriber.register(registers);
         }
     }
 
     public Set<SymbolInfo> getMappingSymbolInfo(String symbol) {
-        return mappingMap.get(symbol);
+        return mappingMap.getOrDefault(symbol,Collections.EMPTY_SET);
+    }
+
+    public boolean isRegistered(String symbol) {
+        return symbolMap.containsKey(symbol);
+    }
+
+    public Set<String> registeredSymbols() {
+        return symbolMap.keySet();
     }
 }

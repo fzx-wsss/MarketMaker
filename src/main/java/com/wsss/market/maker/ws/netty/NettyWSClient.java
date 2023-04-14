@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -29,7 +30,7 @@ public class NettyWSClient implements WSClient {
     private URI websocketURI;
     private WSListener wsListener;
     private Channel channel;
-    private NioEventLoopGroup group = new NioEventLoopGroup();
+    private NioEventLoopGroup group = new NioEventLoopGroup(1);
     @Getter
     private volatile boolean close = true;
 
@@ -55,7 +56,7 @@ public class NettyWSClient implements WSClient {
                         if("wss".equals(websocketURI.getScheme())) {
                             SslContext sslCtx = SslContextBuilder.forClient()
                                     .trustManager(InsecureTrustManagerFactory.INSTANCE).build();
-                            pipeline.addLast(sslCtx.newHandler(socketChannel.alloc()));
+                            pipeline.addLast(sslCtx.newHandler(socketChannel.alloc(),websocketURI.getHost(),websocketURI.getPort()));
                         }
 
                         pipeline.addLast("http-codec",new HttpClientCodec());
@@ -91,8 +92,8 @@ public class NettyWSClient implements WSClient {
     }
 
     public void reConnect(int seconds) {
+        log.info("{}秒后准备重新连接:{}",seconds, websocketURI.getHost());
         group.schedule(()->{
-            log.info("准备重新连接:{}",websocketURI.getHost());
             connect();
         },seconds, TimeUnit.SECONDS);
     }
@@ -109,5 +110,11 @@ public class NettyWSClient implements WSClient {
             channel = null;
             close = true;
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        NettyWSClient client = new NettyWSClient(new URI("wss://ws.bitrue.com:443/etf/ws"),null);
+        client.connect();
+        TimeUnit.MINUTES.sleep(111);
     }
 }

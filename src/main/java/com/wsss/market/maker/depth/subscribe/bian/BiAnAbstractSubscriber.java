@@ -1,6 +1,6 @@
 package com.wsss.market.maker.depth.subscribe.bian;
 
-import com.superatomfin.framework.monitor.Monitor;
+import com.cmcm.finance.common.util.JsonUtil;
 import com.wsss.market.maker.center.DataCenter;
 import com.wsss.market.maker.depth.thread.MarkerMakerThreadPool;
 import com.wsss.market.maker.domain.SymbolInfo;
@@ -9,6 +9,7 @@ import com.wsss.market.maker.ws.WSClient;
 import com.wsss.market.maker.ws.WSListener;
 import com.wsss.market.maker.ws.netty.NettyWSClient;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;
 
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class BiAnAbstractSubscriber {
@@ -30,7 +30,7 @@ public abstract class BiAnAbstractSubscriber {
 
     protected WSClient wsClient;
     @Getter
-    protected Set<SymbolInfo> subscribedSymbol = new HashSet<>();
+    protected Set<String> subscribedSymbol = new HashSet<>();
 
     @PostConstruct
     public void init() {
@@ -45,24 +45,48 @@ public abstract class BiAnAbstractSubscriber {
 
     protected abstract String getSteamUrl();
 
-    public boolean register(List<SymbolInfo> symbolInfoList) {
-        if(symbolInfoList.isEmpty()) {
+    public boolean register(Collection<String> symbols) {
+        if(symbols.isEmpty()) {
             return true;
         }
         try {
-            List<String> symbols = symbolInfoList.stream().map(s->s.getChildSymbol()).flatMap(list->list.stream()).collect(Collectors.toList());
-            doRegister(symbols);
+            BiAnSubMsg msg = doRegisterMsg(symbols);
+            sendMsg(msg);
         } finally {
-            subscribedSymbol.addAll(symbolInfoList);
+            subscribedSymbol.addAll(symbols);
         }
         return true;
+    }
+
+    public boolean remove(Set<String> symbols) {
+        if(symbols.isEmpty()) {
+            return true;
+        }
+        try {
+            BiAnSubMsg msg = doRemoveMsg(symbols);
+            sendMsg(msg);
+        } finally {
+            subscribedSymbol.removeAll(symbols);
+        }
+        return true;
+    }
+
+    protected void sendMsg(BiAnSubMsg msg) {
+        try {
+            String sendMsg = JsonUtil.encode(msg);
+            log.info("bi an sendMsg:{}",sendMsg);
+            wsClient.send(sendMsg);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected WSListener getWSListener() {
         return new BiAnWSListener();
     }
 
-    protected abstract void doRegister(List<String> symbols);
+    protected abstract BiAnSubMsg doRegisterMsg(Collection<String> symbols);
+    protected abstract BiAnSubMsg doRemoveMsg(Collection<String> symbols);
 
 
     protected abstract void notifyProcessThread(SymbolInfo symbolInfo, String childSymbolName, JsonNode data);
@@ -71,7 +95,10 @@ public abstract class BiAnAbstractSubscriber {
 
     @Getter
     class BiAnSubMsg {
-        private String method = "SUBSCRIBE";
+        public final static String UNSUBSCRIBE = "UNSUBSCRIBE";
+        public final static String SUBSCRIBE = "SUBSCRIBE";
+        @Setter
+        private String method;
         private List<String> params = new ArrayList<>();
         private int id = 1;
 
@@ -91,11 +118,14 @@ public abstract class BiAnAbstractSubscriber {
                 }
                 String childSymbolName = convertSymbolName(root.get("stream").asText());
                 JsonNode data = root.get("data");
-
+                if(dataCenter.getMappingSymbolInfo(childSymbolName).isEmpty()) {
+                    log.warn("childSymbolName:{}",childSymbolName);
+                }
                 dataCenter.getMappingSymbolInfo(childSymbolName).forEach(symbolInfo -> {
                     notifyProcessThread(symbolInfo,childSymbolName,data);
                 });
-            } catch (IOException e) {
+            } catch (Exception e) {
+                log.error("BiAnWSListener receive error:{}",msg);
                 throw new RuntimeException(e);
             }
         }

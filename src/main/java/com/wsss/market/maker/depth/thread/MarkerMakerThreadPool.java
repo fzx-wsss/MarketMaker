@@ -2,6 +2,7 @@ package com.wsss.market.maker.depth.thread;
 
 import com.wsss.market.maker.center.BootStrap;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
+@DependsOn("bootStrap")
 public class MarkerMakerThreadPool {
     // 用于深度计算的线程
     private DepthProcessThread[] depthProcessThreads = new DepthProcessThread[Runtime.getRuntime().availableProcessors()];

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,18 +35,23 @@ public class BiAnTradeSubscriber extends BiAnAbstractSubscriber {
     }
 
     @Override
-    protected void doRegister(List<String> symbols) {
+    protected BiAnSubMsg doRegisterMsg(Collection<String> symbols) {
         BiAnSubMsg msg = new BiAnSubMsg();
+        msg.setMethod(BiAnSubMsg.SUBSCRIBE);
         symbols.forEach(s -> {
             msg.addParams(s+suffix);
         });
-        try {
-            String sendMsg = JsonUtil.encode(msg);
-            log.info("bi an sendMsg:{}",sendMsg);
-            wsClient.send(sendMsg);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return msg;
+    }
+
+    @Override
+    protected BiAnSubMsg doRemoveMsg(Collection<String> symbols) {
+        BiAnSubMsg msg = new BiAnSubMsg();
+        msg.setMethod(BiAnSubMsg.UNSUBSCRIBE);
+        symbols.forEach(s -> {
+            msg.addParams(s+suffix);
+        });
+        return msg;
     }
 
     @Override
