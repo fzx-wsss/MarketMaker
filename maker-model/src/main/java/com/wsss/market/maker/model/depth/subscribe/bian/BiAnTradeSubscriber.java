@@ -2,7 +2,6 @@ package com.wsss.market.maker.model.depth.subscribe.bian;
 
 import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.config.BiAnConfig;
-import com.wsss.market.maker.model.depth.subscribe.bian.BiAnAbstractSubscriber;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +56,7 @@ public class BiAnTradeSubscriber extends BiAnAbstractSubscriber {
             log.info("bi_an_receive_trade_msg:{}",data);
         }
         // 按主币对划分执行线程
-        com.wsss.market.maker.depth.subscribe.bian.BiAnTradeListenTask task = new com.wsss.market.maker.depth.subscribe.bian.BiAnTradeListenTask(symbolInfo,data);
+        BiAnTradeListenTask task = new BiAnTradeListenTask(symbolInfo,data);
         markerMakerThreadPool.getTradeProcessThread(symbolInfo.getSymbol()).offer(task);
     }
 

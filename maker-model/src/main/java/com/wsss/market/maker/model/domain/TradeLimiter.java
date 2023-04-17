@@ -11,7 +11,7 @@ public class TradeLimiter {
     private TradeConfig tradeConfig = TradeConfig.getInstance();
     private SlidingTimeWindow window = new SlidingTimeWindow(tradeConfig.getInterval());
     public boolean isLimit() {
-        if (ThreadLocalRandom.current().nextDouble() < window.getAndIncrement() / tradeConfig.getMaxLimit()) {
+        if (ThreadLocalRandom.current().nextDouble() > (double)window.getAndIncrement() / tradeConfig.getMaxLimit()) {
             return true;
         }
         return false;

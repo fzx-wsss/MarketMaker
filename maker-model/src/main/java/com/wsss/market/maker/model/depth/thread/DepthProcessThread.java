@@ -1,11 +1,11 @@
 package com.wsss.market.maker.model.depth.thread;
 
 import com.superatomfin.framework.monitor.Monitor;
-import com.wsss.market.maker.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.center.DataCenter;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.depth.design.MakerDesignPolicy;
 import com.wsss.market.maker.model.depth.limit.MakerLimitPolicy;
+import com.wsss.market.maker.model.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;

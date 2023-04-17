@@ -1,7 +1,7 @@
 package com.wsss.market.maker.model.depth.subscribe.bian;
 
-import com.wsss.market.maker.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.center.ConfigCenter;
+import com.wsss.market.maker.model.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.Source;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;

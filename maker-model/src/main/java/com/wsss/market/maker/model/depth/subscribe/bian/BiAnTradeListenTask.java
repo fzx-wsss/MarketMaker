@@ -1,7 +1,7 @@
-package com.wsss.market.maker.depth.subscribe.bian;
+package com.wsss.market.maker.model.depth.subscribe.bian;
 
 import com.superatomfin.framework.monitor.Monitor;
-import com.wsss.market.maker.depth.subscribe.TradeListenTask;
+import com.wsss.market.maker.model.depth.subscribe.TradeListenTask;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.SymbolInfo;

@@ -2,7 +2,6 @@ package com.wsss.market.maker.model.domain;
 
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
-import com.wsss.market.maker.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.center.BootStrap;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.config.SymbolConfig;
@@ -10,6 +9,7 @@ import com.wsss.market.maker.model.depth.design.DesignType;
 import com.wsss.market.maker.model.depth.design.MakerDesignPolicy;
 import com.wsss.market.maker.model.depth.limit.LimitType;
 import com.wsss.market.maker.model.depth.limit.MakerLimitPolicy;
+import com.wsss.market.maker.model.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.depth.thread.DesignOrderTask;
 import lombok.Getter;
 import lombok.Setter;

@@ -36,10 +36,10 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
 
-//        if(msg instanceof PingWebSocketFrame) {
-//            ctx.channel().writeAndFlush(new PongWebSocketFrame());
-//            return;
-//        }
+        if(msg instanceof PingWebSocketFrame) {
+            ctx.channel().writeAndFlush(new PongWebSocketFrame());
+            return;
+        }
         log.info("receive unknown webSocketFrame:{}",msg.getClass());
     }
 
