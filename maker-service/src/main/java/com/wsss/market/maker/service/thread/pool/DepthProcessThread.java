@@ -1,12 +1,14 @@
-package com.wsss.market.maker.model.depth.thread;
+package com.wsss.market.maker.service.thread.pool;
 
 import com.superatomfin.framework.monitor.Monitor;
-import com.wsss.market.maker.model.center.DataCenter;
 import com.wsss.market.maker.model.config.MakerConfig;
+import com.wsss.market.maker.model.depth.design.MakerContext;
 import com.wsss.market.maker.model.depth.design.MakerDesignPolicy;
 import com.wsss.market.maker.model.depth.limit.MakerLimitPolicy;
-import com.wsss.market.maker.model.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.service.center.DataCenter;
+import com.wsss.market.maker.service.subscribe.DepthListenTask;
+import com.wsss.market.maker.service.task.DesignOrderTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
@@ -27,6 +30,8 @@ public class DepthProcessThread implements Runnable {
     private MarkerMakerThreadPool markerMakerThreadPool;
     @Resource
     private MakerConfig makerConfig;
+
+    private Map<String,DesignOrderTask> taskMap = new ConcurrentHashMap<>();
 
     @Override
     public void run() {
@@ -42,7 +47,8 @@ public class DepthProcessThread implements Runnable {
                 if (!limitPolicy.isOn()) {
                     continue;
                 }
-                if(!symbolInfo.isAllDesignOrderTasksFinished()) {
+                DesignOrderTask last = taskMap.get(symbol);
+                if(!last.isFinish()) {
                     log.warn("last design order task not finish");
                     continue;
                 }
@@ -50,14 +56,19 @@ public class DepthProcessThread implements Runnable {
                 MakerDesignPolicy designPolicy = symbolInfo.getDesignPolicy();
 
                 // 计算需要的下单和撤单
-                DesignOrderTask orderTask = designPolicy.designOrder();
-                if(orderTask == null) {
-                    log.warn("{} order task is null", symbolInfo.getSymbol());
+                MakerContext context =designPolicy.designOrder();
+                if(context == null) {
+                    log.warn("{} context is null", symbolInfo.getSymbol());
                     continue;
                 }
-                symbolInfo.addDesignOrderTask(orderTask);
+                DesignOrderTask orderTask = DesignOrderTask.builder()
+                        .placeOrderList(context.getPlaceOrders())
+                        .cancelOrderList(context.getRemoveOrders())
+                        .build();
+
+                taskMap.put(symbolInfo.getSymbol(),orderTask);
                 // 下单和撤单
-                markerMakerThreadPool.execDesignOrderTask(orderTask);
+                markerMakerThreadPool.execAsyncTask(orderTask);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -72,10 +83,10 @@ public class DepthProcessThread implements Runnable {
 
 
     public void transferOrderBook(SymbolInfo symbolInfo) {
-        Map<String,BlockingQueue<DepthListenTask>> subscribedQueue = symbolInfo.getSubscribedQueueMap();
+        Map<String,BlockingQueue> subscribedQueue = symbolInfo.getSubscribedQueueMap();
         subscribedQueue.forEach((k,v) -> {
             DepthListenTask task = null;
-            while ((task = v.poll()) != null) {
+            while ((task = (DepthListenTask) v.poll()) != null) {
                 // 同步订单簿
                 task.transferOrderBook();
             }

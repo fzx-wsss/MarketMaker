@@ -1,4 +1,4 @@
-package com.wsss.market.maker.model.depth.subscribe.bian;
+package com.wsss.market.maker.service.subscribe.bian;
 
 import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.config.BiAnConfig;

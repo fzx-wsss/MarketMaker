@@ -1,12 +1,12 @@
-package com.wsss.market.maker.model.depth.subscribe.bian;
+package com.wsss.market.maker.service.subscribe.bian;
 
 import com.cmcm.finance.common.util.JsonUtil;
-import com.wsss.market.maker.model.center.DataCenter;
-import com.wsss.market.maker.model.depth.thread.MarkerMakerThreadPool;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.ws.WSClient;
 import com.wsss.market.maker.model.ws.WSListener;
 import com.wsss.market.maker.model.ws.netty.NettyWSClient;
+import com.wsss.market.maker.service.center.DataCenter;
+import com.wsss.market.maker.service.thread.pool.MarkerMakerThreadPool;
 import com.wsss.market.maker.utils.JacksonMapper;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,5 @@
 package com.wsss.market.maker.model.depth.design;
 
-import com.wsss.market.maker.model.depth.thread.DesignOrderTask;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,7 @@ public class FollowMakerDesignPolicy extends AbstractDesignPolicy {
     }
 
     @Override
-    public DesignOrderTask designOrder() {
+    public MakerContext designOrder() {
         if (subscribedOrderBook.buyOrSellIsEmpty()) {
             log.warn("{} order book is empty", symbolInfo.getSymbol());
             return null;
@@ -34,11 +33,7 @@ public class FollowMakerDesignPolicy extends AbstractDesignPolicy {
         }
         avoidOrEatUserOrder(makerContext);
         followPlaceOrCancelOrder(makerContext);
-        return DesignOrderTask.builder()
-                .symbolInfo(symbolInfo)
-                .placeOrderList(makerContext.getPlaceOrders())
-                .cancelOrderList(makerContext.getRemoveOrders())
-                .build();
+        return makerContext;
     }
 
     @Override

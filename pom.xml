@@ -16,6 +16,7 @@
         <module>maker-rpc</module>
         <module>maker-deploy</module>
         <module>maker-portal</module>
+        <module>maker-service</module>
     </modules>
 
     <groupId>com.wsss</groupId>

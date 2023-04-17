@@ -1,13 +1,13 @@
-package com.wsss.market.maker.model.depth.subscribe.bian;
+package com.wsss.market.maker.service.subscribe.bian;
 
-import com.wsss.market.maker.model.center.ConfigCenter;
-import com.wsss.market.maker.model.depth.subscribe.DepthListenTask;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.Source;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.utils.HttpUtils;
 import com.wsss.market.maker.model.utils.StringUtils;
+import com.wsss.market.maker.service.center.ConfigCenter;
+import com.wsss.market.maker.service.subscribe.DepthListenTask;
 import com.wsss.market.maker.utils.JacksonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;

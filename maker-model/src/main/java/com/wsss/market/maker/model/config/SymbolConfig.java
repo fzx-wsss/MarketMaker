@@ -2,7 +2,7 @@ package com.wsss.market.maker.model.config;
 
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
 import com.ctrip.framework.apollo.spring.annotation.ApolloJsonValue;
-import com.wsss.market.maker.model.center.BootStrap;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +45,7 @@ public class SymbolConfig {
     }
 
     public static SymbolConfig getInstance() {
-        return BootStrap.getSpringBean(SymbolConfig.class);
+        return ApplicationUtils.getSpringBean(SymbolConfig.class);
     }
 
 }

@@ -28,7 +28,7 @@
         </dependency>
         <dependency>
             <groupId>com.wsss</groupId>
-            <artifactId>maker-model</artifactId>
+            <artifactId>maker-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

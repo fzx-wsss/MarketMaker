@@ -1,8 +1,8 @@
 package com.wsss.market.maker.model.config;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.wsss.market.maker.model.center.BootStrap;
 import com.wsss.market.maker.model.depth.limit.LimitType;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +39,6 @@ public class BiAnConfig {
     }
 
     public static BiAnConfig getInstance() {
-        return BootStrap.getSpringBean(BiAnConfig.class);
+        return ApplicationUtils.getSpringBean(BiAnConfig.class);
     }
 }

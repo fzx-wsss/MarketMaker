@@ -3,9 +3,9 @@ package com.wsss.market.maker.model.config;
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
 import com.ctrip.framework.apollo.spring.annotation.ApolloJsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.wsss.market.maker.model.center.BootStrap;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.Side;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -210,6 +210,6 @@ public class MakerConfig {
     }
 
     public static MakerConfig getInstance() {
-        return BootStrap.getSpringBean(MakerConfig.class);
+        return ApplicationUtils.getSpringBean(MakerConfig.class);
     }
 }

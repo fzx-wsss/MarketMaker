@@ -1,6 +1,6 @@
 package com.wsss.market.maker.model.config;
 
-import com.wsss.market.maker.model.center.BootStrap;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +18,6 @@ public class TradeConfig {
     private int maxLimit;
 
     public static TradeConfig getInstance() {
-        return BootStrap.getSpringBean(TradeConfig.class);
+        return ApplicationUtils.getSpringBean(TradeConfig.class);
     }
 }

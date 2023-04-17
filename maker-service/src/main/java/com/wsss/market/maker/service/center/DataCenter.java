@@ -1,11 +1,12 @@
-package com.wsss.market.maker.model.center;
+package com.wsss.market.maker.service.center;
 
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
 import com.google.common.collect.Sets;
 import com.wsss.market.maker.model.config.SymbolConfig;
-import com.wsss.market.maker.model.depth.subscribe.bian.BiAnDepthSubscriber;
-import com.wsss.market.maker.model.depth.subscribe.bian.BiAnTradeSubscriber;
 import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
+import com.wsss.market.maker.service.subscribe.bian.BiAnDepthSubscriber;
+import com.wsss.market.maker.service.subscribe.bian.BiAnTradeSubscriber;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +45,7 @@ public class DataCenter {
             if(symbolMap.containsKey(s)) {
                 return;
             }
-            SymbolInfo symbolInfo = BootStrap.getSpringBean(SymbolInfo.class, s);
+            SymbolInfo symbolInfo = ApplicationUtils.getSpringBean(SymbolInfo.class, s);
             symbolMap.put(s, symbolInfo);
 
             for (String child : symbolInfo.getChildSymbol()) {
@@ -111,7 +112,7 @@ public class DataCenter {
             break;
         }
         while (!symbolInfos.isEmpty()) {
-            BiAnDepthSubscriber depthSubscriber = BootStrap.getSpringBean(BiAnDepthSubscriber.class);
+            BiAnDepthSubscriber depthSubscriber = ApplicationUtils.getSpringBean(BiAnDepthSubscriber.class);
             depthSubscribers.add(depthSubscriber);
             List<String> registers = subList(symbolInfos, 0, groupSize);
             symbolInfos = subList(symbolInfos, groupSize, symbolInfos.size());
@@ -147,7 +148,7 @@ public class DataCenter {
             break;
         }
         while (!symbolInfos.isEmpty()) {
-            BiAnTradeSubscriber tradeSubscriber = BootStrap.getSpringBean(BiAnTradeSubscriber.class);
+            BiAnTradeSubscriber tradeSubscriber = ApplicationUtils.getSpringBean(BiAnTradeSubscriber.class);
             tradeSubscribers.add(tradeSubscriber);
             List<String> registers = subList(symbolInfos, 0, groupSize);
             symbolInfos = subList(symbolInfos, groupSize, symbolInfos.size());

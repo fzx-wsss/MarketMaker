@@ -1,11 +1,10 @@
 package com.wsss.market.maker.model.depth.design;
 
-import com.wsss.market.maker.model.center.BootStrap;
-import com.wsss.market.maker.model.depth.thread.DesignOrderTask;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.Source;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -32,11 +31,11 @@ public class TriangleMakerDesignPolicy extends AbstractDesignPolicy {
         String ab = symbolInfo.getChildSymbol().get(1);
         this.abOrderBook = symbolInfo.getChildSubscribedOrderBook(ab);
 
-        this.caOrderBook = BootStrap.getSpringBean(SubscribedOrderBook.class,symbolInfo);
+        this.caOrderBook = ApplicationUtils.getSpringBean(SubscribedOrderBook.class,symbolInfo);
     }
 
     @Override
-    public DesignOrderTask designOrder() {
+    public MakerContext designOrder() {
         if (cbOrderBook.buyOrSellIsEmpty() || abOrderBook.buyOrSellIsEmpty()) {
             log.warn("{} order book is empty,cb:{},ab:{}", symbolInfo.getSymbol(),cbOrderBook.size(),abOrderBook.size());
             return null;
@@ -50,11 +49,7 @@ public class TriangleMakerDesignPolicy extends AbstractDesignPolicy {
         }
         avoidOrEatUserOrder(makerContext);
         followPlaceOrCancelOrder(makerContext);
-        return DesignOrderTask.builder()
-                .symbolInfo(symbolInfo)
-                .placeOrderList(makerContext.getPlaceOrders())
-                .cancelOrderList(makerContext.getRemoveOrders())
-                .build();
+        return makerContext;
     }
 
     @Override

@@ -1,9 +1,7 @@
-package com.wsss.market.maker.model.depth.subscribe.bian;
+package com.wsss.market.maker.service.subscribe.bian;
 
 import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.config.BiAnConfig;
-import com.wsss.market.maker.model.depth.subscribe.bian.BiAnAbstractSubscriber;
-import com.wsss.market.maker.model.depth.subscribe.bian.BiAnDepthListenTask;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import lombok.extern.slf4j.Slf4j;

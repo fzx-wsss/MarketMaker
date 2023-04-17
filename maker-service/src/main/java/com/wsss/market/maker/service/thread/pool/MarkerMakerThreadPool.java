@@ -1,6 +1,7 @@
-package com.wsss.market.maker.model.depth.thread;
+package com.wsss.market.maker.service.thread.pool;
 
-import com.wsss.market.maker.model.center.BootStrap;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
+import com.wsss.market.maker.service.task.DesignOrderTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
-@DependsOn("bootStrap")
+@DependsOn("applicationUtils")
 public class MarkerMakerThreadPool {
     // 用于深度计算的线程
     private DepthProcessThread[] depthProcessThreads = new DepthProcessThread[Runtime.getRuntime().availableProcessors()];
@@ -28,7 +29,7 @@ public class MarkerMakerThreadPool {
                 public Thread newThread(Runnable r) {
                     Thread thread = new Thread(r);
                     thread.setDaemon(true);
-                    thread.setName("designTask-" + count.getAndIncrement());
+                    thread.setName("invoke-task-" + count.getAndIncrement());
                     return thread;
                 }
             },
@@ -46,7 +47,7 @@ public class MarkerMakerThreadPool {
     @PostConstruct
     public void init() {
         for (int i = 0; i< depthProcessThreads.length; i++) {
-            depthProcessThreads[i] = BootStrap.getSpringBean(DepthProcessThread.class);
+            depthProcessThreads[i] = ApplicationUtils.getSpringBean(DepthProcessThread.class);
             Thread thread = new Thread(depthProcessThreads[i]);
             thread.setDaemon(true);
             thread.setName(String.format("DepthProcessThread-%s",i));
@@ -54,7 +55,7 @@ public class MarkerMakerThreadPool {
         }
 
         for (int i = 0; i< tradeProcessThreads.length; i++) {
-            tradeProcessThreads[i] = BootStrap.getSpringBean(TradeProcessThread.class);
+            tradeProcessThreads[i] = ApplicationUtils.getSpringBean(TradeProcessThread.class);
             Thread thread = new Thread(tradeProcessThreads[i]);
             thread.setDaemon(true);
             thread.setName(String.format("TradeProcessThread-%s",i));
@@ -69,8 +70,12 @@ public class MarkerMakerThreadPool {
         return tradeProcessThreads[Math.abs(symbol.hashCode()) % tradeProcessThreads.length];
     }
 
-    public void execDesignOrderTask(DesignOrderTask task) {
+    public void execAsyncTask(Runnable task) {
         designOrderExecutor.execute(task);
+    }
+
+    public <T> Future<T> execAsyncTask(Callable<T> task) {
+        return designOrderExecutor.submit(task);
     }
 
 }

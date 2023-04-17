@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>maker-rpc</artifactId>
+    <artifactId>maker-service</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -21,6 +21,11 @@
         <dependency>
             <groupId>com.wsss</groupId>
             <artifactId>maker-model</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wsss</groupId>
+            <artifactId>maker-rpc</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

@@ -1,4 +1,4 @@
-package com.wsss.market.maker.model.center;
+package com.wsss.market.maker.service.center;
 
 
 import com.wsss.market.maker.model.config.BiAnConfig;

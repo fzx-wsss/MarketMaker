@@ -2,15 +2,13 @@ package com.wsss.market.maker.model.domain;
 
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
-import com.wsss.market.maker.model.center.BootStrap;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.depth.design.DesignType;
 import com.wsss.market.maker.model.depth.design.MakerDesignPolicy;
 import com.wsss.market.maker.model.depth.limit.LimitType;
 import com.wsss.market.maker.model.depth.limit.MakerLimitPolicy;
-import com.wsss.market.maker.model.depth.subscribe.DepthListenTask;
-import com.wsss.market.maker.model.depth.thread.DesignOrderTask;
+import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,18 +38,17 @@ public class SymbolInfo {
     @Resource
     private MakerConfig makerConfig;
 
-    private Map<String,BlockingQueue<DepthListenTask>> subscribedQueueMap = new CacheMap<>(k->new ArrayBlockingQueue<>(1000));
-    private Map<String,SubscribedOrderBook> subscribedOrderBookMap = new CacheMap<>(k-> BootStrap.getSpringBean(SubscribedOrderBook.class,this));
+    private Map<String,BlockingQueue> subscribedQueueMap = new CacheMap<>(k->new ArrayBlockingQueue<>(1000));
+    private Map<String,SubscribedOrderBook> subscribedOrderBookMap = new CacheMap<>(k-> ApplicationUtils.getSpringBean(SubscribedOrderBook.class,this));
     private volatile long lastReceiveTime;
     private volatile MakerLimitPolicy limitPolicy;
     private volatile MakerDesignPolicy designPolicy;
-    private volatile DesignOrderTask designOrderTasks;
     private OwnerOrderBook ownerOrderBook;
     private UserBBO userBBO;
 
     public SymbolInfo(String symbol) {
         this.symbol = symbol;
-        this.ownerOrderBook = BootStrap.getSpringBean(OwnerOrderBook.class,this);
+        this.ownerOrderBook = ApplicationUtils.getSpringBean(OwnerOrderBook.class,this);
     }
 
     @PostConstruct
@@ -92,27 +89,12 @@ public class SymbolInfo {
         return designPolicy;
     }
 
-    public void addDesignOrderTask(DesignOrderTask task) {
-        designOrderTasks = task;
-    }
-
-    /**
-     * 上次任务是否结束
-     *
-     * @return
-     */
-    public boolean isAllDesignOrderTasksFinished() {
-        if (designOrderTasks == null) {
-            return true;
-        }
-        return designOrderTasks.isFinish();
-    }
 
     public SymbolAoWithFeatureAndExtra getSymbolAo() {
         return coinConfigCenterClient.getSymbolInfoByName(symbol);
     }
 
-    public void putDepthListenTask(String childSymbol, DepthListenTask depthListenTask) {
+    public void putDepthListenTask(String childSymbol, Object depthListenTask) {
         subscribedQueueMap.get(childSymbol).offer(depthListenTask);
     }
 
