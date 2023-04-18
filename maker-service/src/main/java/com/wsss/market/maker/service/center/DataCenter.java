@@ -7,12 +7,15 @@ import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import com.wsss.market.maker.service.subscribe.bian.BiAnDepthSubscriber;
 import com.wsss.market.maker.service.subscribe.bian.BiAnTradeSubscriber;
+import com.wsss.market.maker.service.task.QueryOwnerOrderTask;
+import com.wsss.market.maker.service.thread.pool.MarkerMakerThreadPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Component
@@ -21,6 +24,8 @@ public class DataCenter {
     private CoinConfigCenterClient coinConfigCenterClient;
     @Resource
     private SymbolConfig symbolConfig;
+    @Resource
+    private MarkerMakerThreadPool makerPool;
 
     /**
      * 实际币对名称与实际币对的关系
@@ -41,12 +46,15 @@ public class DataCenter {
     public synchronized void register(Set<String> symbolNames) {
         log.info("register symbol:{}", symbolNames);
         List<String> childList = new ArrayList<>();
+        List<Future> syncTaskFuture = new ArrayList<>();
         symbolNames.stream().forEach(s->{
             if(symbolMap.containsKey(s)) {
                 return;
             }
             SymbolInfo symbolInfo = ApplicationUtils.getSpringBean(SymbolInfo.class, s);
             symbolMap.put(s, symbolInfo);
+            QueryOwnerOrderTask orderTask = QueryOwnerOrderTask.builder().symbol(symbolInfo).build();
+            syncTaskFuture.add(makerPool.execAsyncTask(orderTask));
 
             for (String child : symbolInfo.getChildSymbol()) {
                 Set set = mappingMap.computeIfAbsent(child, k -> Sets.newConcurrentHashSet());
@@ -56,7 +64,13 @@ public class DataCenter {
                 set.add(symbolInfo);
             }
         });
-
+        syncTaskFuture.forEach(f-> {
+            try {
+                f.get();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         registerDepth(childList);
         registerTrade(childList);
@@ -153,6 +167,12 @@ public class DataCenter {
             List<String> registers = subList(symbolInfos, 0, groupSize);
             symbolInfos = subList(symbolInfos, groupSize, symbolInfos.size());
             tradeSubscriber.register(registers);
+        }
+    }
+
+    public void wakeUpDepthAllSymbol() {
+        for (String s : symbolMap.keySet()) {
+            makerPool.getDepthProcessThread(s).offer(s);
         }
     }
 

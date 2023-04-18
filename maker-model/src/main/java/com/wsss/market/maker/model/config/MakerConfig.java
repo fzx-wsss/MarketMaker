@@ -99,6 +99,27 @@ public class MakerConfig {
     private String defaultDesign;
     @Value("${depth.limit.type.default:ALWAYS}")
     private String defaultLimit;
+    @Getter
+    @Value("${depth.limit.make.min.time:99}")
+    private int minMakeOrderTime;
+
+    @Getter
+    @Value("${depth.sync.order.min.time:10}")
+    private int minSyncTime;
+
+    @Getter
+    @Value("${depth.sync.order.time:30}")
+    private int syncTime;
+
+    @Getter
+    @Value("${depth.make.order.random.replace.rate:1}")
+    private int replaceRate;
+
+    @Getter
+    @Value("${depth.make.order.random.replace.interval:5}")
+    private int replaceInterval;
+
+
 
 
     public int getSpreadLowLimitMillesimal(SymbolAoWithFeatureAndExtra symbolInfo) {

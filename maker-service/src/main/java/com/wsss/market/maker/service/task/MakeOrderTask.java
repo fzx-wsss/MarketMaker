@@ -13,33 +13,30 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
 @Getter
-public class DesignOrderTask implements Callable<Boolean> {
-    private volatile boolean finish = false;
-    private SymbolInfo symbolInfo;
+public class MakeOrderTask extends AbstractAsyncTask<Boolean> {
+
     private List<Order> cancelOrderList;
     private List<Order> placeOrderList;
     private OrderService orderService;
     private long time = System.currentTimeMillis();
 
     @Builder
-    public DesignOrderTask(SymbolInfo symbolInfo, List<Order> cancelOrderList, List<Order> placeOrderList) {
-        this.symbolInfo = symbolInfo;
+    public MakeOrderTask(SymbolInfo symbolInfo, List<Order> cancelOrderList, List<Order> placeOrderList) {
+        super(symbolInfo);
         this.cancelOrderList = cancelOrderList;
         this.placeOrderList = placeOrderList;
         this.orderService = ApplicationUtils.getSpringBean(OrderService.class);
     }
 
     @Override
-    public Boolean call() throws Exception {
+    public Boolean doCall() throws Exception {
         designOrder();
         updateOrderBook();
-        finish();
         return true;
     }
 
@@ -66,14 +63,5 @@ public class DesignOrderTask implements Callable<Boolean> {
             orderBook.update(order, Operation.CANCEL);
         }
     }
-
-    public void finish() {
-        finish = true;
-    }
-
-    public boolean isFinish() {
-        return finish;
-    }
-
 
 }

@@ -3,11 +3,13 @@ package com.wsss.market.maker.rpc.impl;
 import com.wsss.market.maker.model.domain.Order;
 import com.wsss.market.maker.rpc.OrderService;
 import javafx.util.Pair;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+@Component
 public class EinsteinOrderService implements OrderService {
     @Override
     public void placeOrCancelOrders(String symbol, List<Order> orders) {

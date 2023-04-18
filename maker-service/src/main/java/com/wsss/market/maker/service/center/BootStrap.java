@@ -1,9 +1,10 @@
 package com.wsss.market.maker.service.center;
 
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.wsss.market.maker.model.config.BiAnConfig;
+import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.config.SymbolConfig;
+import com.wsss.market.maker.service.thread.pool.MarkerMakerThreadPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -13,8 +14,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -29,9 +28,9 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
     @Resource
     private SymbolConfig symbolConfig;
     @Resource
+    private MakerConfig makerConfig;
+    @Resource
     private CoinConfigCenterClient coinConfigCenterClient;
-
-    private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("share-thread").build());
 
     @Override
     public void destroy() throws Exception {
@@ -52,9 +51,12 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
         start = true;
 
         reload();
-        executorService.scheduleWithFixedDelay(() -> {
+        MarkerMakerThreadPool.getShareExecutor().scheduleWithFixedDelay(() -> {
             reload();
-        }, 30, 30, TimeUnit.SECONDS);
+        }, symbolConfig.getReloadTime(), symbolConfig.getReloadTime(), TimeUnit.SECONDS);
+        MarkerMakerThreadPool.getShareExecutor().scheduleWithFixedDelay(() -> {
+            dataCenter.wakeUpDepthAllSymbol();
+        }, makerConfig.getSyncTime(), makerConfig.getSyncTime(), TimeUnit.SECONDS);
     }
 
     public void reload() {
@@ -70,8 +72,13 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
 
             Set<String> add = set.stream().filter(s -> !dataCenter.isRegistered(s)).collect(Collectors.toSet());
             Set<String> remove = dataCenter.registeredSymbols().stream().filter(s -> !set.contains(s)).collect(Collectors.toSet());
-            dataCenter.register(add);
-            dataCenter.remove(remove);
+
+            if(!add.isEmpty()) {
+                dataCenter.register(add);
+            }
+            if(!remove.isEmpty()) {
+                dataCenter.remove(remove);
+            }
         } catch (Exception e) {
             log.error("reload error:{}", e);
         }

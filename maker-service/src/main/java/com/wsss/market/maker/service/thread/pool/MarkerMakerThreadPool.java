@@ -1,7 +1,8 @@
 package com.wsss.market.maker.service.thread.pool;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
-import com.wsss.market.maker.service.task.DesignOrderTask;
+import com.wsss.market.maker.service.task.AbstractAsyncTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -36,13 +37,15 @@ public class MarkerMakerThreadPool {
             new RejectedExecutionHandler() {
                 @Override
                 public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-                    DesignOrderTask orderTask = (DesignOrderTask)r;
+                    AbstractAsyncTask orderTask = (AbstractAsyncTask)r;
                     orderTask.finish();
                     String symbol = orderTask.getSymbolInfo().getSymbol();
                     log.error("executorService is full,symbol:{}",symbol);
                 }
             }
     );
+
+    private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setDaemon(true).setNameFormat("share-thread").build());
 
     @PostConstruct
     public void init() {
@@ -78,4 +81,7 @@ public class MarkerMakerThreadPool {
         return designOrderExecutor.submit(task);
     }
 
+    public static ScheduledExecutorService getShareExecutor() {
+        return executorService;
+    }
 }

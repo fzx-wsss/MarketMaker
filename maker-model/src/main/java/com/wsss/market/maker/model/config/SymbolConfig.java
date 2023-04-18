@@ -18,7 +18,7 @@ public class SymbolConfig {
     @ApolloJsonValue("${market.maker.support.symbols:[\"btcusdt\",\"ethusdt\",\"xrpusdt\",\"etcbtc\",\"bchbtc\",\"ltcbtc\"]}")
     private Set<String> supportSymbols;
     @Getter
-    @ApolloJsonValue("${market.maker.debug.symbols:[]}")
+    @ApolloJsonValue("${market.maker.debug.symbols:[etcbtc]}")
     private Set<String> debugSymbols;
     @ApolloJsonValue("${market.maker.mapping.symbols:{}}")
     private Map<String,String> mappingSymbols;
@@ -35,6 +35,10 @@ public class SymbolConfig {
     @Getter
     @Value("${market.maker.symbol.hash.end:10000}")
     private int endHash;
+
+    @Getter
+    @Value("${market.maker.symbol.reload.time:30}")
+    private int reloadTime;
 
     public String getMappingSymbol(SymbolAoWithFeatureAndExtra symbolAo) {
         return mappingSymbols.get(symbolAo.getSymbolName());

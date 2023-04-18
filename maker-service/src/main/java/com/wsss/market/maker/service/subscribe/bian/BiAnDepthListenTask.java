@@ -80,6 +80,7 @@ public class BiAnDepthListenTask implements DepthListenTask {
         updateOrderBook(Side.SELL,sells, subscribedOrderBook);
         subscribedOrderBook.setEventId(eventId);
     }
+
     private void updateOrderBook(Side side, JsonNode priceLevels, SubscribedOrderBook subscribedOrderBook) {
         for (JsonNode pair : priceLevels) {
             BigDecimal price = new BigDecimal(pair.get(0).asText());

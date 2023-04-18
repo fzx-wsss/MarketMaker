@@ -74,8 +74,10 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
         System.out.println(book);
         System.out.println(book.getBestBuy());
         System.out.println(book.getBestSell());
-        System.out.println(book.getBuyBooks(BigDecimal.valueOf(2L),5));
-        System.out.println(book.getSellBooks(BigDecimal.valueOf(7L),5));
+        System.out.println(book.getFartherBooks(BigDecimal.valueOf(2L),5,Side.BUY));
+        System.out.println(book.getFartherBooks(BigDecimal.valueOf(7L),5,Side.SELL));
+        System.out.println(book.getNearerBooks(BigDecimal.valueOf(2L),Side.BUY));
+        System.out.println(book.getNearerBooks(BigDecimal.valueOf(7L),Side.SELL));
     }
 
 }

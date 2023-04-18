@@ -2,6 +2,7 @@ package com.wsss.market.maker.model.depth.design;
 
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.domain.*;
+import com.wsss.market.maker.model.utils.TimeSieve;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -18,28 +20,75 @@ public abstract class AbstractDesignPolicy implements MakerDesignPolicy {
     @Resource
     protected MakerConfig makerConfig;
 
+    protected TimeSieve timeSieve = TimeSieve.builder().time(System.currentTimeMillis()).build();
+
     protected abstract SubscribedOrderBook getSubscribedOrderBook();
 
-    protected void followPlaceOrCancelOrder(MakerContext bbo) {
+    protected void followPlaceOrCancelOrder(MakerContext makerContext) {
         OwnerOrderBook ownerOrderBook = symbolInfo.getOwnerOrderBook();
         int maxLevel = makerConfig.getMaxLevel(symbolInfo.getSymbolAo());
         int priceScale = symbolInfo.getSymbolAo().getShowPriceScale();
-        Map<BigDecimal, List<Depth>> followBuyDepths = getSubscribedOrderBook().getBuyBooks(bbo.getMakeBestBuy(), maxLevel)
+        Map<BigDecimal, List<Depth>> followBuyDepths = getSubscribedOrderBook().getFartherBooks(makerContext.getMakeBestBuy(), maxLevel,Side.BUY)
                 .stream().collect(Collectors.groupingBy(
                         d -> d.getPrice().setScale(priceScale, BigDecimal.ROUND_DOWN)
                 ));
-        Map<BigDecimal, List<Depth>> followSellDepths = getSubscribedOrderBook().getSellBooks(bbo.getMakeBestSell(), maxLevel)
+        Map<BigDecimal, List<Depth>> followSellDepths = getSubscribedOrderBook().getFartherBooks(makerContext.getMakeBestSell(), maxLevel,Side.SELL)
                 .stream().collect(Collectors.groupingBy(
                         d -> d.getPrice().setScale(priceScale, BigDecimal.ROUND_DOWN)
                 ));
         Set<BigDecimal> ownerBuyPrices = ownerOrderBook.getBuyPrices();
         Set<BigDecimal> ownerSellPrices = ownerOrderBook.getSellPrices();
 
-        addPlaceOrders(followBuyDepths, ownerBuyPrices, bbo, Side.BUY);
-        addPlaceOrders(followSellDepths, ownerSellPrices, bbo, Side.SELL);
+        addPlaceOrders(followBuyDepths, ownerBuyPrices, makerContext, Side.BUY);
+        addPlaceOrders(followSellDepths, ownerSellPrices, makerContext, Side.SELL);
 
-        addRemoveOrders(ownerBuyPrices, followBuyDepths, bbo, ownerOrderBook, Side.BUY);
-        addRemoveOrders(ownerSellPrices, followSellDepths, bbo, ownerOrderBook, Side.SELL);
+        addRemoveOrders(ownerBuyPrices, followBuyDepths, makerContext, ownerOrderBook, Side.BUY);
+        addRemoveOrders(ownerSellPrices, followSellDepths, makerContext, ownerOrderBook, Side.SELL);
+
+        randomReplaceOrder(ownerBuyPrices,ownerSellPrices,followBuyDepths,followSellDepths,makerContext);
+    }
+
+    protected void randomReplaceOrder(Set<BigDecimal> ownerBuyPrices,Set<BigDecimal> ownerSellPrices
+            , Map<BigDecimal, List<Depth>> followBuyDepths,Map<BigDecimal, List<Depth>> followSellDepths, MakerContext makerContext) {
+
+        timeSieve.moreThanExec(()-> {
+            OwnerOrderBook ownerOrderBook = symbolInfo.getOwnerOrderBook();
+            int volScale = symbolInfo.getSymbolAo().getShowVolumeScale();
+            double volRandomNum = makerConfig.getVolRandomNum(symbolInfo.getSymbolAo());
+            double volMultipleNum = makerConfig.getVolMultipleNum(symbolInfo.getSymbolAo());
+            int rate = makerConfig.getReplaceRate();
+            ownerBuyPrices.forEach(p -> {
+                if(ThreadLocalRandom.current().nextInt(1000) >= rate) {
+                    return;
+                }
+                List<Depth> depths = followBuyDepths.get(p);
+                if (depths == null || depths.isEmpty()) {
+                    return;
+                }
+
+                makerContext.addRemoveOrder(ownerOrderBook.getBook(p, Side.BUY));
+                BigDecimal realVol = calVol(depths,volScale,volRandomNum,volMultipleNum);
+                if(realVol != null) {
+                    makerContext.addPlaceOrder(new Order(p, realVol, Side.BUY));
+                }
+            });
+
+            ownerSellPrices.forEach(p -> {
+                if(ThreadLocalRandom.current().nextInt(100) >= rate) {
+                    return;
+                }
+                List<Depth> depths = followSellDepths.get(p);
+                if (depths == null || depths.isEmpty()) {
+                    return;
+                }
+
+                makerContext.addRemoveOrder(ownerOrderBook.getBook(p, Side.SELL));
+                BigDecimal realVol = calVol(depths,volScale,volRandomNum,volMultipleNum);
+                if(realVol != null) {
+                    makerContext.addPlaceOrder(new Order(p, realVol, Side.SELL));
+                }
+            });
+        }, TimeUnit.SECONDS.toMillis(makerConfig.getReplaceInterval()));
     }
 
     protected void addPlaceOrders(Map<BigDecimal, List<Depth>> followDepths, Set<BigDecimal> ownerPrices, MakerContext makerContext, Side side) {
@@ -50,16 +99,23 @@ public abstract class AbstractDesignPolicy implements MakerDesignPolicy {
             if (ownerPrices.contains(k)) {
                 return;
             }
-            // 不需要精确，所以可以使用double
-            double oriVol = l.stream().mapToDouble(d -> d.getVolume().doubleValue()).sum();
-            BigDecimal realVol = BigDecimal.valueOf(oriVol * volMultipleNum + (ThreadLocalRandom.current().nextBoolean() ? oriVol * volRandomNum : -oriVol * volRandomNum))
-                    .setScale(volScale, BigDecimal.ROUND_DOWN);
-            if (realVol.compareTo(BigDecimal.ZERO) <= 0) {
-                // 数量过小则丢弃
-                return;
+            BigDecimal realVol = calVol(l,volScale,volRandomNum,volMultipleNum);
+            if(realVol != null) {
+                makerContext.addPlaceOrder(new Order(k, realVol, side));
             }
-            makerContext.addPlaceOrder(new Order(k, realVol, side));
         });
+    }
+
+    protected BigDecimal calVol(List<Depth> depths,int volScale,double volRandomNum,double volMultipleNum) {
+        // 不需要精确，所以可以使用double
+        double oriVol = depths.stream().mapToDouble(d -> d.getVolume().doubleValue()).sum();
+        BigDecimal realVol = BigDecimal.valueOf(oriVol * volMultipleNum + (ThreadLocalRandom.current().nextBoolean() ? oriVol * volRandomNum : -oriVol * volRandomNum))
+                .setScale(volScale, BigDecimal.ROUND_DOWN);
+        if (realVol.compareTo(BigDecimal.ZERO) <= 0) {
+            // 数量过小则丢弃
+            return null;
+        }
+        return realVol;
     }
 
     protected void addRemoveOrders(Set<BigDecimal> ownerPrices, Map<BigDecimal, List<Depth>> followDepths, MakerContext makerContext, OwnerOrderBook ownerOrderBook, Side side) {
