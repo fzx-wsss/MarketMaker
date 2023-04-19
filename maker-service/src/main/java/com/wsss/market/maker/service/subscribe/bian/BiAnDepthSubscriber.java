@@ -31,7 +31,7 @@ public class BiAnDepthSubscriber extends BiAnAbstractSubscriber {
 
 
     @Override
-    protected BiAnSubMsg doRegisterMsg(Collection<String> symbols) {
+    protected BiAnSubMsg buildRegisterMsg(Collection<String> symbols) {
         BiAnSubMsg msg = new BiAnSubMsg();
         msg.setMethod(BiAnSubMsg.SUBSCRIBE);
         symbols.forEach(s -> {
@@ -41,7 +41,7 @@ public class BiAnDepthSubscriber extends BiAnAbstractSubscriber {
     }
 
     @Override
-    protected BiAnSubMsg doRemoveMsg(Collection<String> symbols) {
+    protected BiAnSubMsg buildRemoveMsg(Collection<String> symbols) {
         BiAnSubMsg msg = new BiAnSubMsg();
         msg.setMethod(BiAnSubMsg.UNSUBSCRIBE);
         symbols.forEach(s -> {
