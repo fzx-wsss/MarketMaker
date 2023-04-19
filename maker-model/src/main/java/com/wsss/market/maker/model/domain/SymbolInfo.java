@@ -105,4 +105,8 @@ public class SymbolInfo {
     public boolean isDebugLog() {
         return symbolConfig.getDebugSymbols().contains(symbol);
     }
+
+    public boolean isMonitor() {
+        return symbolConfig.getMonitorSymbols().contains(symbol);
+    }
 }

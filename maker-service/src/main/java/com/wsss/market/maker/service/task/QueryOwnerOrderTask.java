@@ -1,5 +1,6 @@
 package com.wsss.market.maker.service.task;
 
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.domain.Order;
 import com.wsss.market.maker.model.domain.OwnerOrderBook;
 import com.wsss.market.maker.model.domain.Side;
@@ -34,29 +35,34 @@ public class QueryOwnerOrderTask extends AbstractAsyncTask<Boolean> {
 
     @Override
     public Boolean doCall() throws Exception {
-        List<Order> list = orderService.getOpenOrders(symbolInfo.getSymbol(),uid);
-        if(list.isEmpty()) {
+        Monitor.TimeContext context = Monitor.timer("query_owner_task");
+        try {
+            List<Order> list = orderService.getOpenOrders(symbolInfo.getSymbol(), uid);
+            if (list.isEmpty()) {
+                return true;
+            }
+
+            list.forEach(o -> {
+                if (o.getSide() != side) {
+                    log.error("order side is error:{}", o.getOrderId());
+                    return;
+                }
+                if (orderBook.getBook(o.getPrice(), o.getSide()) != null && !isRecentOrder(o)) {
+                    orderBook.update(o, Operation.PLACE);
+                }
+            });
+
+            Set<String> set = list.stream().map(o -> o.getOrderId()).collect(Collectors.toSet());
+            List<Order> orders = orderBook.stream(side).map(e -> e.getValue()).flatMap(Collection::stream).collect(Collectors.toList());
+            orders.forEach(o -> {
+                if (!set.contains(o.getOrderId()) && !isRecentOrder(o)) {
+                    orderBook.update(o, Operation.PLACE);
+                }
+            });
             return true;
+        } finally {
+            context.end();
         }
-
-        list.forEach(o->{
-            if(o.getSide() != side) {
-                log.error("order side is error:{}",o.getOrderId());
-                return;
-            }
-            if(orderBook.getBook(o.getPrice(),o.getSide()) != null && !isRecentOrder(o)) {
-                orderBook.update(o,Operation.PLACE);
-            }
-        });
-
-        Set<String> set = list.stream().map(o->o.getOrderId()).collect(Collectors.toSet());
-        List<Order> orders = orderBook.stream(side).map(e->e.getValue()).flatMap(Collection::stream).collect(Collectors.toList());
-        orders.forEach(o-> {
-            if(!set.contains(o.getOrderId()) && !isRecentOrder(o)) {
-                orderBook.update(o,Operation.PLACE);
-            }
-        });
-        return true;
     }
 
     private boolean isRecentOrder(Order order) {

@@ -1,9 +1,9 @@
 package com.wsss.market.maker.service.subscribe.bian;
 
-import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.config.BiAnConfig;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.model.utils.Perf;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;
 import org.springframework.context.annotation.Scope;
@@ -51,7 +51,7 @@ public class BiAnTradeSubscriber extends BiAnAbstractSubscriber {
 
     @Override
     protected void notifyProcessThread(SymbolInfo symbolInfo, String childSymbolName, JsonNode data) {
-        Monitor.counter("bi_an_receive_trade_msg").end();
+        Perf.count("bi_an_receive_trade_msg",symbolInfo);
         if(symbolInfo.isDebugLog()) {
             log.info("bi_an_receive_trade_msg:{}",data);
         }

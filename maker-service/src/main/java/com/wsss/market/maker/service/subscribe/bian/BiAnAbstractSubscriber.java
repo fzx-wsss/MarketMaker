@@ -31,7 +31,6 @@ public abstract class BiAnAbstractSubscriber extends AbstractSubscriber {
     protected void sendMsg(BiAnSubMsg msg) {
         try {
             String sendMsg = JsonUtil.encode(msg);
-            log.info("bi an sendMsg:{}",sendMsg);
             sendMsg(sendMsg);
         } catch (IOException e) {
             throw new RuntimeException(e);

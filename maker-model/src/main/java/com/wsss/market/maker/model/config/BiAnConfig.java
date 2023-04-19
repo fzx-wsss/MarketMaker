@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableApolloConfig
 public class BiAnConfig {
+    private static BiAnConfig cache;
     @Value("${binance.steam.depth.url:wss://stream.binance.com:443/stream}")
     public String binanceSteamUrl;
     /**
@@ -39,6 +40,9 @@ public class BiAnConfig {
     }
 
     public static BiAnConfig getInstance() {
-        return ApplicationUtils.getSpringBean(BiAnConfig.class);
+        if(cache == null) {
+            cache = ApplicationUtils.getSpringBean(BiAnConfig.class);
+        }
+        return cache;
     }
 }

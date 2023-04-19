@@ -1,7 +1,9 @@
 package com.wsss.market.maker.service.subscribe;
 
+import com.wsss.market.maker.model.domain.SymbolInfo;
+
 public interface DepthListenTask {
-    String getSymbol();
+    SymbolInfo getSymbol();
 
     void transferOrderBook();
 }

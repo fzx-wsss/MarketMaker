@@ -77,7 +77,7 @@ public class TriangleMakerDesignPolicy extends AbstractDesignPolicy {
                 BigDecimal caPrice = cbPrice.divide(abPrice, priceScale, BigDecimal.ROUND_CEILING);
                 BigDecimal cbVolume = cbOrderBook.getSellBook(cbPrice).getVolume().setScale(volumeScale,BigDecimal.ROUND_CEILING);
                 if (caPrice.compareTo(BigDecimal.ZERO) > 0) {
-                    caOrderBook.update(Side.SELL, caPrice, cbVolume, Source.BITURE);
+                    caOrderBook.update(Side.SELL, caPrice, cbVolume, Source.Bitrue);
                 }
             }
         }
@@ -93,7 +93,7 @@ public class TriangleMakerDesignPolicy extends AbstractDesignPolicy {
                 BigDecimal caPrice = cbPrice.divide(abPrice, priceScale, BigDecimal.ROUND_CEILING);
                 BigDecimal cbVolume = cbOrderBook.getBuyBook(cbPrice).getVolume().setScale(volumeScale,BigDecimal.ROUND_CEILING);
                 if (caPrice.compareTo(BigDecimal.ZERO) > 0) {
-                    caOrderBook.update(Side.BUY, caPrice, cbVolume, Source.BITURE);
+                    caOrderBook.update(Side.BUY, caPrice, cbVolume, Source.Bitrue);
                 }
             }
         }

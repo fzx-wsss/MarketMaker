@@ -9,6 +9,7 @@ import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.model.utils.TimeSieve;
 import com.wsss.market.maker.service.center.DataCenter;
 import com.wsss.market.maker.service.subscribe.DepthListenTask;
@@ -48,9 +49,11 @@ public class DepthProcessThread implements Runnable {
     @Override
     public void run() {
         Monitor.TimeContext timeContext = null;
+        Monitor.CountContext count = Monitor.counter(Thread.currentThread().getName());
         while (true) {
             try {
                 String symbol = queue.take();
+                count.end();
                 timeContext = Monitor.timer("depth_process_thread");
                 SymbolInfo symbolInfo = dataCenter.getSymbolInfo(symbol);
                 transferOrderBook(symbolInfo);
@@ -72,6 +75,7 @@ public class DepthProcessThread implements Runnable {
                     continue;
                 }
 
+                Perf.count("exec_depth_task",symbolInfo);
                 // 下单和撤单
                 markerMakerThreadPool.execAsyncTask(task);
             } catch (Exception e) {

@@ -85,7 +85,7 @@ public class BiAnDepthListenTask implements DepthListenTask {
         for (JsonNode pair : priceLevels) {
             BigDecimal price = new BigDecimal(pair.get(0).asText());
             BigDecimal volume = new BigDecimal(pair.get(1).asText());
-            if(!subscribedOrderBook.update(side, price, volume, Source.BIAN)) {
+            if(!subscribedOrderBook.update(side, price, volume, Source.Binance)) {
                 // 当价格超出最大档位时跳出循环，不在进行后续更新
                 // 可以这么操作的前提是，订单簿的档位是有序的
                 break;
@@ -94,8 +94,8 @@ public class BiAnDepthListenTask implements DepthListenTask {
     }
 
     @Override
-    public String getSymbol() {
-        return symbolInfo.getSymbol();
+    public SymbolInfo getSymbol() {
+        return symbolInfo;
     }
 
     public static void main(String[] args) {

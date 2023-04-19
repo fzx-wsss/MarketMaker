@@ -1,6 +1,7 @@
 package com.wsss.market.maker.service.task;
 
 
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.domain.Order;
 import com.wsss.market.maker.model.domain.OwnerOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
@@ -22,7 +23,7 @@ public class MakeOrderTask extends AbstractAsyncTask<Boolean> {
 
     private List<Order> cancelOrderList;
     private List<Order> placeOrderList;
-    private OrderService orderService;
+    private static OrderService orderService = ApplicationUtils.getSpringBean(OrderService.class);
     private long time = System.currentTimeMillis();
 
     @Builder
@@ -30,14 +31,18 @@ public class MakeOrderTask extends AbstractAsyncTask<Boolean> {
         super(symbolInfo);
         this.cancelOrderList = cancelOrderList;
         this.placeOrderList = placeOrderList;
-        this.orderService = ApplicationUtils.getSpringBean(OrderService.class);
     }
 
     @Override
     public Boolean doCall() throws Exception {
-        designOrder();
-        updateOrderBook();
-        return true;
+        Monitor.TimeContext context = Monitor.timer("make_order_task");
+        try {
+            designOrder();
+            updateOrderBook();
+            return true;
+        } finally {
+            context.end();
+        }
     }
 
     public void designOrder() {

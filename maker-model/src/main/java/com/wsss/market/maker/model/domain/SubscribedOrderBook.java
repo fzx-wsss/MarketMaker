@@ -61,16 +61,16 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
 
     public static void main(String[] args) {
         SubscribedOrderBook book = new SubscribedOrderBook(null);
-        book.update(Side.SELL,BigDecimal.valueOf(10L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.SELL,BigDecimal.valueOf(9L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.SELL,BigDecimal.valueOf(8L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.SELL,BigDecimal.valueOf(7L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.SELL,BigDecimal.valueOf(6L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.BUY,BigDecimal.valueOf(5L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.BUY,BigDecimal.valueOf(4L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.BUY,BigDecimal.valueOf(3L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.BUY,BigDecimal.valueOf(2L),BigDecimal.ONE,Source.BIAN);
-        book.update(Side.BUY,BigDecimal.valueOf(1L),BigDecimal.ONE,Source.BIAN);
+        book.update(Side.SELL,BigDecimal.valueOf(10L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.SELL,BigDecimal.valueOf(9L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.SELL,BigDecimal.valueOf(8L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.SELL,BigDecimal.valueOf(7L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.SELL,BigDecimal.valueOf(6L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.BUY,BigDecimal.valueOf(5L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.BUY,BigDecimal.valueOf(4L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.BUY,BigDecimal.valueOf(3L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.BUY,BigDecimal.valueOf(2L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.BUY,BigDecimal.valueOf(1L),BigDecimal.ONE,Source.Binance);
         System.out.println(book);
         System.out.println(book.getBestBuy());
         System.out.println(book.getBestSell());

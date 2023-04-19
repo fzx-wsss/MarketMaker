@@ -23,6 +23,6 @@ public class EinsteinOrderService implements OrderService {
 
     @Override
     public Pair<BigDecimal, BigDecimal> getPriceRange(String symbol) {
-        return null;
+        return new Pair<>(null,null);
     }
 }

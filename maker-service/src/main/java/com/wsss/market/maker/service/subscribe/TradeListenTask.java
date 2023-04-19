@@ -1,7 +1,10 @@
 package com.wsss.market.maker.service.subscribe;
 
-public interface TradeListenTask {
-    String getSymbol();
+import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.model.domain.Trade;
 
-    void logTrade();
+public interface TradeListenTask {
+    SymbolInfo getSymbol();
+
+    Trade logTrade();
 }
