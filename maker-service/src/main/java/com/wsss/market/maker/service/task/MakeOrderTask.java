@@ -3,6 +3,7 @@ package com.wsss.market.maker.service.task;
 
 import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.domain.Order;
+import com.wsss.market.maker.model.domain.OrderCommand;
 import com.wsss.market.maker.model.domain.OwnerOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.domain.maker.Operation;
@@ -47,7 +48,10 @@ public class MakeOrderTask extends AbstractAsyncTask<Boolean> {
 
     public void designOrder() {
         try {
-            List<Order> list = Stream.concat(placeOrderList.stream(),cancelOrderList.stream()).collect(Collectors.toList());
+            List<OrderCommand> list = Stream.concat(
+                            placeOrderList.stream().map(o->OrderCommand.builder().operation(Operation.PLACE).build()),
+                            cancelOrderList.stream().map(o->OrderCommand.builder().operation(Operation.CANCEL).build()))
+                    .collect(Collectors.toList());
             Collections.shuffle(list);
             orderService.placeOrCancelOrders(symbolInfo.getSymbol(), list);
             if(symbolInfo.isDebugLog()) {

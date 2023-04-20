@@ -27,9 +27,9 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
         this.symbolInfo = symbolInfo;
     }
 
+    @Override
     public void clear() {
-        buys.clear();
-        sells.clear();
+        super.clear();
         eventId = 0;
     }
 

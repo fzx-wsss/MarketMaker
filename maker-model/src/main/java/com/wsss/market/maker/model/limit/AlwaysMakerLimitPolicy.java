@@ -1,4 +1,4 @@
-package com.wsss.market.maker.model.depth.limit;
+package com.wsss.market.maker.model.limit;
 
 public class AlwaysMakerLimitPolicy implements MakerLimitPolicy {
     @Override
@@ -7,7 +7,7 @@ public class AlwaysMakerLimitPolicy implements MakerLimitPolicy {
     }
 
     @Override
-    public LimitType getLimitType() {
-        return LimitType.ALWAYS;
+    public MakerLimitType getLimitType() {
+        return MakerLimitType.ALWAYS;
     }
 }

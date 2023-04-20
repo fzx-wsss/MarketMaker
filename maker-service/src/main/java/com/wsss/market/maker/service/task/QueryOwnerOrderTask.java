@@ -19,17 +19,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class QueryOwnerOrderTask extends AbstractAsyncTask<Boolean> {
-    private Integer uid;
-    private Side side;
     private OwnerOrderBook orderBook;
-    private OrderService orderService;
+    private static OrderService orderService = ApplicationUtils.getSpringBean(OrderService.class);
+    ;
 
     @Builder
     public QueryOwnerOrderTask(SymbolInfo symbol) {
         super(symbol);
-        this.uid = uid;
-        this.side = side;
-        this.orderService = ApplicationUtils.getSpringBean(OrderService.class);
         this.orderBook = symbol.getOwnerOrderBook();
     }
 
@@ -37,32 +33,37 @@ public class QueryOwnerOrderTask extends AbstractAsyncTask<Boolean> {
     public Boolean doCall() throws Exception {
         Monitor.TimeContext context = Monitor.timer("query_owner_task");
         try {
-            List<Order> list = orderService.getOpenOrders(symbolInfo.getSymbol(), uid);
-            if (list.isEmpty()) {
-                return true;
-            }
-
-            list.forEach(o -> {
-                if (o.getSide() != side) {
-                    log.error("order side is error:{}", o.getOrderId());
-                    return;
-                }
-                if (orderBook.getBook(o.getPrice(), o.getSide()) != null && !isRecentOrder(o)) {
-                    orderBook.update(o, Operation.PLACE);
-                }
-            });
-
-            Set<String> set = list.stream().map(o -> o.getOrderId()).collect(Collectors.toSet());
-            List<Order> orders = orderBook.stream(side).map(e -> e.getValue()).flatMap(Collection::stream).collect(Collectors.toList());
-            orders.forEach(o -> {
-                if (!set.contains(o.getOrderId()) && !isRecentOrder(o)) {
-                    orderBook.update(o, Operation.PLACE);
-                }
-            });
+            syncOrder(symbolInfo.getSymbolAo().getOffsetBuyRobotId().intValue(), Side.BUY);
+            syncOrder(symbolInfo.getSymbolAo().getOffsetSellRobotId().intValue(), Side.SELL);
             return true;
         } finally {
             context.end();
         }
+    }
+
+    private void syncOrder(Integer uid, Side side) {
+        List<Order> list = orderService.getOpenOrders(symbolInfo.getSymbol(), uid);
+        if (list.isEmpty()) {
+            return;
+        }
+
+        list.forEach(o -> {
+            if (o.getSide() != side) {
+                log.error("order side is error:{}", o.getOrderId());
+                return;
+            }
+            if (orderBook.getBook(o.getPrice(), o.getSide()) != null && !isRecentOrder(o)) {
+                orderBook.update(o, Operation.PLACE);
+            }
+        });
+
+        Set<String> set = list.stream().map(o -> o.getOrderId()).collect(Collectors.toSet());
+        List<Order> orders = orderBook.stream(side).map(e -> e.getValue()).flatMap(Collection::stream).collect(Collectors.toList());
+        orders.forEach(o -> {
+            if (!set.contains(o.getOrderId()) && !isRecentOrder(o)) {
+                orderBook.update(o, Operation.CANCEL);
+            }
+        });
     }
 
     private boolean isRecentOrder(Order order) {

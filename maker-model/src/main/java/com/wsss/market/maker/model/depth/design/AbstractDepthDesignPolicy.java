@@ -1,8 +1,8 @@
 package com.wsss.market.maker.model.depth.design;
 
+import com.superatomfin.share.tools.other.TimeSieve;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.domain.*;
-import com.wsss.market.maker.model.utils.TimeSieve;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class AbstractDesignPolicy implements MakerDesignPolicy {
+public abstract class AbstractDepthDesignPolicy implements DepthDesignPolicy {
     protected SymbolInfo symbolInfo;
     @Resource
     protected MakerConfig makerConfig;

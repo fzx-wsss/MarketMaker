@@ -16,12 +16,12 @@ import java.util.List;
 @Slf4j
 @Component
 @Scope("prototype")
-public class TriangleMakerDesignPolicy extends AbstractDesignPolicy {
+public class TriangleDepthDesignPolicy extends AbstractDepthDesignPolicy {
     private SubscribedOrderBook cbOrderBook;
     private SubscribedOrderBook abOrderBook;
     private SubscribedOrderBook caOrderBook;
 
-    public TriangleMakerDesignPolicy(SymbolInfo symbolInfo) {
+    public TriangleDepthDesignPolicy(SymbolInfo symbolInfo) {
         this.symbolInfo = symbolInfo;
         if(symbolInfo.getChildSymbol().size() != 2) {
             throw new UnsupportedOperationException("ChildSymbol size is size:" + symbolInfo.getChildSymbol().size());
@@ -101,7 +101,7 @@ public class TriangleMakerDesignPolicy extends AbstractDesignPolicy {
     }
 
     @Override
-    public DesignType getDesignType() {
-        return DesignType.TRIANGLE;
+    public DepthDesignType getDesignType() {
+        return DepthDesignType.TRIANGLE;
     }
 }

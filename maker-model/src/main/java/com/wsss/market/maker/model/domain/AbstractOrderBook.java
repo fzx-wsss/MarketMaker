@@ -79,6 +79,10 @@ public class AbstractOrderBook<T> {
         return map.remove(price);
     }
 
+    public void clear() {
+        buys.clear();
+        sells.clear();
+    }
     public Stream<Map.Entry<BigDecimal, T>> stream(Side side) {
         return getMap(side).entrySet().stream();
     }

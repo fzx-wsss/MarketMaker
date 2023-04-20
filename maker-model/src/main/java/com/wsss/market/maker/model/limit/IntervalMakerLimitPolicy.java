@@ -1,4 +1,4 @@
-package com.wsss.market.maker.model.depth.limit;
+package com.wsss.market.maker.model.limit;
 
 public class IntervalMakerLimitPolicy implements MakerLimitPolicy {
     private int max;
@@ -15,8 +15,8 @@ public class IntervalMakerLimitPolicy implements MakerLimitPolicy {
     }
 
     @Override
-    public LimitType getLimitType() {
-        return LimitType.INTERVAL;
+    public MakerLimitType getLimitType() {
+        return MakerLimitType.INTERVAL;
     }
 
 }

@@ -114,6 +114,10 @@ public class MakerConfig {
     @Value("${depth.make.order.random.replace.interval:5}")
     private int replaceInterval;
 
+    @Getter
+    @Value("${depth.make.order.cancel.sleep:10}")
+    private int cancelOrderSleep;
+
 
 
 

@@ -1,41 +1,47 @@
-package com.wsss.market.maker.model.depth.limit;
+package com.wsss.market.maker.model.limit;
 
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 
 import java.util.Map;
 
-public enum LimitType {
-    // 推送一次摆一次
+public enum MakerLimitType {
+    // 不限制
     ALWAYS {
         @Override
         public MakerLimitPolicy createMakerLimitPolicy(SymbolInfo symbolInfo) {
             return new AlwaysMakerLimitPolicy();
         }
     },
-    // 推送N次摆一次
+    // N次放过一次
     INTERVAL {
         @Override
         public MakerLimitPolicy createMakerLimitPolicy(SymbolInfo symbolInfo) {
             return null;
         }
     },
-    // 按固定时间摆一次
+    // 按固定时间放过一次
     FIXED {
         @Override
         public MakerLimitPolicy createMakerLimitPolicy(SymbolInfo symbolInfo) {
             return null;
         }
+    },
+    SLIDING_TIME {
+        @Override
+        public MakerLimitPolicy createMakerLimitPolicy(SymbolInfo symbolInfo) {
+            return new SlidingTimeMakerLimitPolicy();
+        }
     };
 
     public abstract MakerLimitPolicy createMakerLimitPolicy(SymbolInfo symbolInfo);
 
-    private static Map<String,LimitType> limitTypeMap = new CacheMap<>(k->{
-        LimitType limitType = LimitType.valueOf(k.toUpperCase());
-        return limitType;
+    private static Map<String, MakerLimitType> limitTypeMap = new CacheMap<>(k->{
+        MakerLimitType makerLimitType = MakerLimitType.valueOf(k.toUpperCase());
+        return makerLimitType;
     });
 
-    public static LimitType getByName(String name) {
+    public static MakerLimitType getByName(String name) {
         return limitTypeMap.get(name);
     }
 }

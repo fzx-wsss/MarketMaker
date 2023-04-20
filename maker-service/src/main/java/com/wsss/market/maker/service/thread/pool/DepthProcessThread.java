@@ -1,16 +1,16 @@
 package com.wsss.market.maker.service.thread.pool;
 
 import com.superatomfin.framework.monitor.Monitor;
+import com.superatomfin.share.tools.other.TimeSieve;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.depth.design.MakerContext;
-import com.wsss.market.maker.model.depth.design.MakerDesignPolicy;
-import com.wsss.market.maker.model.depth.limit.MakerLimitPolicy;
+import com.wsss.market.maker.model.depth.design.DepthDesignPolicy;
+import com.wsss.market.maker.model.limit.MakerLimitPolicy;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.utils.Perf;
-import com.wsss.market.maker.model.utils.TimeSieve;
 import com.wsss.market.maker.service.center.DataCenter;
 import com.wsss.market.maker.service.subscribe.DepthListenTask;
 import com.wsss.market.maker.service.task.AbstractAsyncTask;
@@ -75,7 +75,7 @@ public class DepthProcessThread implements Runnable {
                     continue;
                 }
 
-                Perf.count("exec_depth_task",symbolInfo);
+                Perf.count("exec_depth_task", symbolInfo);
                 // 下单和撤单
                 markerMakerThreadPool.execAsyncTask(task);
             } catch (Exception e) {
@@ -114,7 +114,7 @@ public class DepthProcessThread implements Runnable {
     }
 
     private MakeOrderTask createMakeOrderTask(SymbolInfo symbolInfo) {
-        MakerDesignPolicy designPolicy = symbolInfo.getDesignPolicy();
+        DepthDesignPolicy designPolicy = symbolInfo.getDepthDesignPolicy();
 
         // 计算需要的下单和撤单
         MakerContext context = designPolicy.designOrder();

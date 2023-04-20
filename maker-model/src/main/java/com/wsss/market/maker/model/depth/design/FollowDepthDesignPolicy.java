@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @Scope("prototype")
-public class FollowMakerDesignPolicy extends AbstractDesignPolicy {
+public class FollowDepthDesignPolicy extends AbstractDepthDesignPolicy {
     private SubscribedOrderBook subscribedOrderBook;
 
-    public FollowMakerDesignPolicy(SymbolInfo symbolInfo) {
+    public FollowDepthDesignPolicy(SymbolInfo symbolInfo) {
         this.symbolInfo = symbolInfo;
         if(symbolInfo.getChildSymbol().size() != 1) {
             throw new UnsupportedOperationException("ChildSymbol size is size:" + symbolInfo.getChildSymbol().size());
@@ -37,8 +37,8 @@ public class FollowMakerDesignPolicy extends AbstractDesignPolicy {
     }
 
     @Override
-    public DesignType getDesignType() {
-        return DesignType.FOLLOW;
+    public DepthDesignType getDesignType() {
+        return DepthDesignType.FOLLOW;
     }
 
 

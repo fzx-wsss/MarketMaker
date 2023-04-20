@@ -7,6 +7,7 @@ import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import com.wsss.market.maker.service.subscribe.bian.BiAnDepthSubscriber;
 import com.wsss.market.maker.service.subscribe.bian.BiAnTradeSubscriber;
+import com.wsss.market.maker.service.task.CancelOwnerOrderTask;
 import com.wsss.market.maker.service.task.QueryOwnerOrderTask;
 import com.wsss.market.maker.service.thread.pool.MarkerMakerThreadPool;
 import lombok.extern.slf4j.Slf4j;
@@ -79,12 +80,13 @@ public class DataCenter {
     public synchronized void remove(Set<String> symbolNames) {
         log.info("remove symbol:{}", symbolNames);
         Set<String> childList = new HashSet<>();
+        Set<SymbolInfo> symbolInfos = new HashSet<>();
         symbolNames.forEach(s -> {
             if (!symbolMap.containsKey(s)) {
                 return;
             }
             SymbolInfo symbolInfo = symbolMap.remove(s);
-
+            symbolInfos.add(symbolInfo);
             for (String child : symbolInfo.getChildSymbol()) {
                 Set<SymbolInfo> set = mappingMap.get(child);
                 set.remove(symbolInfo);
@@ -97,6 +99,11 @@ public class DataCenter {
 
         removeDepth(childList);
         removeTrade(childList);
+
+        symbolInfos.forEach(s->{
+            CancelOwnerOrderTask orderTask = CancelOwnerOrderTask.builder().symbolInfo(s).build();
+            makerPool.execAsyncTask(orderTask);
+        });
     }
 
     private void removeDepth(Set<String> symbolInfos) {

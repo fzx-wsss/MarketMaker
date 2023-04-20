@@ -1,4 +1,4 @@
-package com.wsss.market.maker.model.depth.limit;
+package com.wsss.market.maker.model.limit;
 
 public class FixedMakerLimitPolicy implements MakerLimitPolicy {
     private long lastTime;
@@ -14,7 +14,7 @@ public class FixedMakerLimitPolicy implements MakerLimitPolicy {
     }
 
     @Override
-    public LimitType getLimitType() {
-        return LimitType.FIXED;
+    public MakerLimitType getLimitType() {
+        return MakerLimitType.FIXED;
     }
 }

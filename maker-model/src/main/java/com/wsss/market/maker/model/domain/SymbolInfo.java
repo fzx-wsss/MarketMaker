@@ -4,10 +4,13 @@ import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
 import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.config.SymbolConfig;
-import com.wsss.market.maker.model.depth.design.DesignType;
-import com.wsss.market.maker.model.depth.design.MakerDesignPolicy;
-import com.wsss.market.maker.model.depth.limit.LimitType;
-import com.wsss.market.maker.model.depth.limit.MakerLimitPolicy;
+import com.wsss.market.maker.model.config.TradeConfig;
+import com.wsss.market.maker.model.depth.design.DepthDesignPolicy;
+import com.wsss.market.maker.model.depth.design.DepthDesignType;
+import com.wsss.market.maker.model.limit.MakerLimitPolicy;
+import com.wsss.market.maker.model.limit.MakerLimitType;
+import com.wsss.market.maker.model.trade.design.TradeDesignPolicy;
+import com.wsss.market.maker.model.trade.design.TradeDesignType;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,12 +40,15 @@ public class SymbolInfo {
     private SymbolConfig symbolConfig;
     @Resource
     private MakerConfig makerConfig;
+    @Resource
+    private TradeConfig tradeConfig;
 
     private Map<String,BlockingQueue> subscribedQueueMap = new CacheMap<>(k->new ArrayBlockingQueue<>(1000));
     private Map<String,SubscribedOrderBook> subscribedOrderBookMap = new CacheMap<>(k-> ApplicationUtils.getSpringBean(SubscribedOrderBook.class,this));
     private volatile long lastReceiveTime;
     private volatile MakerLimitPolicy limitPolicy;
-    private volatile MakerDesignPolicy designPolicy;
+    private volatile DepthDesignPolicy depthDesignPolicy;
+    private volatile TradeDesignPolicy tradeDesignPolicy;
     private OwnerOrderBook ownerOrderBook;
     private UserBBO userBBO;
 
@@ -74,19 +80,27 @@ public class SymbolInfo {
     }
 
     public MakerLimitPolicy getLimitPolicy() {
-        LimitType limitType = LimitType.getByName(makerConfig.getLimitType(getSymbolAo()));
-        if (limitPolicy == null || limitType != limitPolicy.getLimitType()) {
-            limitPolicy = limitType.createMakerLimitPolicy(this);
+        MakerLimitType makerLimitType = MakerLimitType.getByName(makerConfig.getLimitType(getSymbolAo()));
+        if (limitPolicy == null || makerLimitType != limitPolicy.getLimitType()) {
+            limitPolicy = makerLimitType.createMakerLimitPolicy(this);
         }
         return limitPolicy;
     }
 
-    public MakerDesignPolicy getDesignPolicy() {
-        DesignType type = DesignType.getByName(makerConfig.getDesignType(getSymbolAo()));
-        if (designPolicy == null || type != designPolicy.getDesignType()) {
-            designPolicy = type.createMakerDesignPolicy(this);
+    public DepthDesignPolicy getDepthDesignPolicy() {
+//        DepthDesignType type = DepthDesignType.getByName(makerConfig.getDesignType(getSymbolAo()));
+        if (depthDesignPolicy == null) {
+            depthDesignPolicy = DepthDesignType.createDefaultMakerDesignPolicy(this);
         }
-        return designPolicy;
+        return depthDesignPolicy;
+    }
+
+    public TradeDesignPolicy getTradeDesignPolicy() {
+//        TradeDesignType type = TradeDesignType.getByName(tradeConfig.getDesignType(getSymbolAo()));
+        if (tradeDesignPolicy == null) {
+            tradeDesignPolicy = TradeDesignType.createDefaultTradeDesignPolicy(this);
+        }
+        return tradeDesignPolicy;
     }
 
 

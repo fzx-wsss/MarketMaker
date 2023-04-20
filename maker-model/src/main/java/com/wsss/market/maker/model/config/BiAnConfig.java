@@ -1,7 +1,7 @@
 package com.wsss.market.maker.model.config;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.wsss.market.maker.model.depth.limit.LimitType;
+import com.wsss.market.maker.model.limit.MakerLimitType;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,9 +34,9 @@ public class BiAnConfig {
     @Value("${market.maker.depth.default.limit.type:ALWAYS}")
     public String limitType;
 
-    public LimitType getLimitType() {
+    public MakerLimitType getLimitType() {
 
-        return LimitType.getByName(limitType);
+        return MakerLimitType.getByName(limitType);
     }
 
     public static BiAnConfig getInstance() {

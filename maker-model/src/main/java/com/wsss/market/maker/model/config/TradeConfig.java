@@ -42,6 +42,9 @@ public class TradeConfig {
      */
     private String TRADE_VOLUME_DISCOUNT_KEY = "trade_volume_discount";
 
+    @Value("${trade.design.type.default:FOLLOW}")
+    private String defaultDesign;
+
     public BigDecimal getPriceStrategy(SymbolAoWithFeatureAndExtra symbolAo) {
         BigDecimal discount = SymbolConfig.getJsonNodeValue(symbolAo, PRICE_STRATEGY, BigDecimal.class);
         if (discount != null) {
@@ -59,6 +62,10 @@ public class TradeConfig {
     }
     public BigDecimal getVolumeRandom(SymbolAoWithFeatureAndExtra symbolAo) {
         return SymbolConfig.bigDecimalMap.get(volumeRandom);
+    }
+
+    public String getDesignType(SymbolAoWithFeatureAndExtra symbolInfo) {
+        return defaultDesign;
     }
 
     public static TradeConfig getInstance() {
