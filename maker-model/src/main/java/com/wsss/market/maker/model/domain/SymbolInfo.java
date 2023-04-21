@@ -60,7 +60,7 @@ public class SymbolInfo {
 
     @PostConstruct
     private void initChildrenSymbol() {
-        SymbolAoWithFeatureAndExtra symbolAo = coinConfigCenterClient.getSymbolInfoByName(symbol);
+        SymbolAoWithFeatureAndExtra symbolAo = getSymbolAo();
         String mappingSymbol = symbolConfig.getMappingSymbol(symbolAo);
         String triangleSymbol = symbolConfig.getTriangleSymbol(symbolAo);
         if(mappingSymbol != null && triangleSymbol != null) {

@@ -31,6 +31,7 @@ public class CancelOwnerOrderTask extends AbstractAsyncTask<Boolean> {
         Sleep.sleepSeconds(makerConfig.getCancelOrderSleep());
         cancelOrderByUid(symbolInfo.getSymbolAo().getOffsetBuyRobotId().intValue());
         cancelOrderByUid(symbolInfo.getSymbolAo().getOffsetSellRobotId().intValue());
+        log.info("cancel all order finish");
         return true;
     }
 

@@ -56,10 +56,16 @@ public class SymbolConfig {
     private int maxReceiveTime;
 
     public String getMappingSymbol(SymbolAoWithFeatureAndExtra symbolAo) {
+        if(symbolAo == null) {
+            return null;
+        }
         return mappingSymbols.get(symbolAo.getSymbolName());
     }
 
     public String getTriangleSymbol(SymbolAoWithFeatureAndExtra symbolAo) {
+        if(symbolAo == null) {
+            return null;
+        }
         return triangleSymbols.get(symbolAo.getSymbolName());
     }
 
