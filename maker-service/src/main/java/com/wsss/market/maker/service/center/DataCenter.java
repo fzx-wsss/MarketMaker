@@ -1,10 +1,10 @@
 package com.wsss.market.maker.service.center;
 
-import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
 import com.google.common.collect.Sets;
 import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
+import com.wsss.market.maker.service.subscribe.AbstractSubscriber;
 import com.wsss.market.maker.service.subscribe.bian.BiAnDepthSubscriber;
 import com.wsss.market.maker.service.subscribe.bian.BiAnTradeSubscriber;
 import com.wsss.market.maker.service.task.CancelOwnerOrderTask;
@@ -21,8 +21,6 @@ import java.util.concurrent.Future;
 @Slf4j
 @Component
 public class DataCenter {
-    @Resource
-    private CoinConfigCenterClient coinConfigCenterClient;
     @Resource
     private SymbolConfig symbolConfig;
     @Resource
@@ -180,6 +178,15 @@ public class DataCenter {
     public void wakeUpDepthAllSymbol() {
         for (String s : symbolMap.keySet()) {
             makerPool.getDepthProcessThread(s).offer(s);
+        }
+    }
+
+    public void checkSubscriber() {
+        for (AbstractSubscriber s : depthSubscribers) {
+            s.checkSelf();
+        }
+        for (AbstractSubscriber s : tradeSubscribers) {
+            s.checkSelf();
         }
     }
 

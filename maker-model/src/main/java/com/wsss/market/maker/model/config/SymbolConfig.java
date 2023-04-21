@@ -51,6 +51,10 @@ public class SymbolConfig {
     @Value("${market.maker.symbol.reload.time:30}")
     private int reloadTime;
 
+    @Getter
+    @Value("${market.maker.subscribe.max.receive.time:300}")
+    private int maxReceiveTime;
+
     public String getMappingSymbol(SymbolAoWithFeatureAndExtra symbolAo) {
         return mappingSymbols.get(symbolAo.getSymbolName());
     }

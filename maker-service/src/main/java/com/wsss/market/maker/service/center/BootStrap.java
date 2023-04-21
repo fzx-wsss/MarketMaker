@@ -56,18 +56,17 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
         }, symbolConfig.getReloadTime(), symbolConfig.getReloadTime(), TimeUnit.SECONDS);
         MarkerMakerThreadPool.getShareExecutor().scheduleWithFixedDelay(() -> {
             dataCenter.wakeUpDepthAllSymbol();
+            dataCenter.checkSubscriber();
         }, makerConfig.getSyncTime(), makerConfig.getSyncTime(), TimeUnit.SECONDS);
     }
 
     public void reload() {
         try {
-            Set<String> set = coinConfigCenterClient.getAllSymbolInfo().stream()
-                    .filter(s -> symbolConfig.getSupportSymbols().contains(s.getSymbolName()) || symbolConfig.getSupportSymbols().contains("all"))
+            Set<String> set = symbolConfig.getSupportSymbols().stream()
                     .filter(s -> {
                         int hash = Math.abs(s.hashCode()) % 10000;
                         return hash >= symbolConfig.getStartHash() && hash <= symbolConfig.getEndHash();
                     })
-                    .map(s -> s.getSymbolName())
                     .collect(Collectors.toSet());
 
             Set<String> add = set.stream().filter(s -> !dataCenter.isRegistered(s)).collect(Collectors.toSet());

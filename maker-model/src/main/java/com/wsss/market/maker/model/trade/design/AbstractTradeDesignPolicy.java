@@ -2,6 +2,7 @@ package com.wsss.market.maker.model.trade.design;
 
 import com.wsss.market.maker.model.config.TradeConfig;
 import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.model.utils.Perf;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -37,7 +38,7 @@ public abstract class AbstractTradeDesignPolicy implements TradeDesignPolicy {
         random = ThreadLocalRandom.current().nextBoolean() ? BigDecimal.ONE.add(random) : BigDecimal.ONE.subtract(random);
         BigDecimal fixedVolume = originalVolume.multiply(discount).multiply(random).setScale(symbolInfo.getSymbolAo().getShowVolumeScale(), BigDecimal.ROUND_DOWN);
         if (fixedVolume.compareTo(symbolInfo.getSymbolAo().getTradeMinVolume()) < 0) {
-            log.warn("{} volume too small,originalVolume:{},discount:{},random:{}",symbolInfo.getSymbol(),originalVolume,discount,random);
+            Perf.count("volume_too_small",symbolInfo);
             return null;
         }
         return fixedVolume;

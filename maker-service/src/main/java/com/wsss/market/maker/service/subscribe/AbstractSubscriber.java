@@ -1,5 +1,6 @@
 package com.wsss.market.maker.service.subscribe;
 
+import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.ws.WSClient;
 import com.wsss.market.maker.model.ws.WSListener;
 import com.wsss.market.maker.model.ws.netty.NettyWSClient;
@@ -19,7 +20,9 @@ import java.util.Set;
 @Slf4j
 public abstract class AbstractSubscriber {
     private WSClient wsClient;
+    private long lastReceiveTime = System.currentTimeMillis();
 
+    protected SymbolConfig symbolConfig = SymbolConfig.getInstance();
     @Resource
     protected DataCenter dataCenter;
     @Resource
@@ -27,6 +30,7 @@ public abstract class AbstractSubscriber {
 
     @Getter
     protected Set<String> subscribedSymbol = new HashSet<>();
+
 
     @PostConstruct
     public void init() {
@@ -71,7 +75,20 @@ public abstract class AbstractSubscriber {
         wsClient.send(sendMsg);
     }
 
+    protected void updateLastReceiveTime() {
+        lastReceiveTime = System.currentTimeMillis();
+    }
+
+    public synchronized void checkSelf() {
+        if(System.currentTimeMillis() - lastReceiveTime > symbolConfig.getMaxReceiveTime() && !subscribedSymbol.isEmpty()) {
+            lastReceiveTime = System.currentTimeMillis();
+            wsClient.reConnect(3);
+        }
+    }
+
     protected abstract String getSteamUrl();
 
     protected abstract WSListener getWSListener();
+
+
 }

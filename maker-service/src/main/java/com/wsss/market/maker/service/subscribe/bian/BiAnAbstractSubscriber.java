@@ -71,6 +71,7 @@ public abstract class BiAnAbstractSubscriber extends AbstractSubscriber {
                     log.warn("receive unknown msg: {}",root);
                     return;
                 }
+                updateLastReceiveTime();
                 String childSymbolName = convertSymbolName(root.get("stream").asText());
                 JsonNode data = root.get("data");
                 if(dataCenter.getMappingSymbolInfo(childSymbolName).isEmpty()) {

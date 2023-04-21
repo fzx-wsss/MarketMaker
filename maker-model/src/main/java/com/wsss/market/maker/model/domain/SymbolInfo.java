@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -104,8 +105,22 @@ public class SymbolInfo {
     }
 
 
+    private SymbolAoWithFeatureAndExtra defaultAo = new SymbolAoWithFeatureAndExtra();
+    {
+        defaultAo.setShowPriceScale(6);
+        defaultAo.setShowVolumeScale(4);
+        defaultAo.setOffsetPriceScale(6);
+        defaultAo.setOffsetVolumeScale(4);
+        defaultAo.setOffsetBuyRobotId(0L);
+        defaultAo.setOffsetSellRobotId(0L);
+        defaultAo.setTradeMinVolume(BigDecimal.TEN);
+    }
     public SymbolAoWithFeatureAndExtra getSymbolAo() {
-        return coinConfigCenterClient.getSymbolInfoByName(symbol);
+        SymbolAoWithFeatureAndExtra symbolAo = coinConfigCenterClient.getSymbolInfoByName(symbol);
+        if(symbolAo == null) {
+            symbolAo = defaultAo;
+        }
+        return symbolAo;
     }
 
     public void putDepthListenTask(String childSymbol, Object depthListenTask) {
