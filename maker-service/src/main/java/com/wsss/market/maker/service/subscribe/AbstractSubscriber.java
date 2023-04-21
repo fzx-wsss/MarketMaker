@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public abstract class AbstractSubscriber {
@@ -80,7 +81,7 @@ public abstract class AbstractSubscriber {
     }
 
     public synchronized void checkSelf() {
-        if(System.currentTimeMillis() - lastReceiveTime > symbolConfig.getMaxReceiveTime() && !subscribedSymbol.isEmpty()) {
+        if(System.currentTimeMillis() - lastReceiveTime > TimeUnit.SECONDS.toMillis(symbolConfig.getMaxReceiveTime()) && !subscribedSymbol.isEmpty()) {
             lastReceiveTime = System.currentTimeMillis();
             wsClient.reConnect(3);
         }

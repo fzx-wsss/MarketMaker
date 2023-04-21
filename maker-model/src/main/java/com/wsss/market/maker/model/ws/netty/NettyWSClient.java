@@ -1,6 +1,7 @@
 package com.wsss.market.maker.model.ws.netty;
 
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.wsss.market.maker.model.ws.WSClient;
 import com.wsss.market.maker.model.ws.WSListener;
 import io.netty.bootstrap.Bootstrap;
@@ -30,7 +31,7 @@ public class NettyWSClient implements WSClient {
     private WSListener wsListener;
     private Channel channel;
     private NioEventLoopGroup group = new NioEventLoopGroup(1);
-    private static final NioEventLoopGroup reconnectGroup = new NioEventLoopGroup(1);
+    private static final NioEventLoopGroup reconnectGroup = new NioEventLoopGroup(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("reconnect").build());
     @Getter
     private volatile boolean close = true;
 
@@ -44,7 +45,10 @@ public class NettyWSClient implements WSClient {
     }
 
     public void connect() {
-        close();
+        if(!close) {
+            log.warn("repeat connect");
+            return;
+        }
         close = false;
         //netty基本操作，启动类
         Bootstrap boot = new Bootstrap();
@@ -101,6 +105,7 @@ public class NettyWSClient implements WSClient {
     }
 
     public void reConnect(int seconds) {
+        close();
         log.info("{}秒后准备重新连接:{}",seconds, websocketURI.getHost());
         reconnectGroup.schedule(()->{
             connect();
@@ -115,9 +120,9 @@ public class NettyWSClient implements WSClient {
     public void close() {
         if (channel != null) {
             log.info("关闭连接:{}",websocketURI.getHost());
+            close = true;
             channel.close();
             channel = null;
-            close = true;
         }
     }
 
