@@ -55,13 +55,11 @@ public class AbstractOrderBook<T> {
 
     public List<T> getFartherBooks(BigDecimal startPrice, int maxLevel,Side side) {
         List<T> list = new ArrayList<>(maxLevel);
-        ConcurrentSkipListMap<BigDecimal,T> map = getMap(side);
-        for(Map.Entry<BigDecimal,T> entry : map.entrySet()) {
-            if(map.comparator().compare(entry.getKey(),startPrice) >= 0) {
-                list.add(entry.getValue());
-                if(list.size() >= maxLevel) {
-                    break;
-                }
+        Map<BigDecimal, T> map = getMap(side).tailMap(startPrice);
+        for (Map.Entry<BigDecimal, T> entry : map.entrySet()) {
+            list.add(entry.getValue());
+            if (list.size() >= maxLevel) {
+                break;
             }
         }
         return list;
