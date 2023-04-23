@@ -4,6 +4,7 @@ import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.domain.Trade;
 import com.wsss.market.maker.model.utils.Perf;
+import com.wsss.market.maker.model.utils.StringUtils;
 import com.wsss.market.maker.service.subscribe.TradeListenTask;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;
@@ -30,8 +31,8 @@ public class BiAnTradeListenTask implements TradeListenTask {
         BigDecimal volume = new BigDecimal(json.get("q").asText());
         BigDecimal price = new BigDecimal(json.get("p").asText());
         boolean isBuy = json.get("m").asBoolean();
-
-        return Trade.builder().symbol(symbolInfo.getSymbol()).askUserId(symbolInfo.getSymbolAo().getOffsetSellRobotId().intValue()).askId(0L)
+        String symbol = StringUtils.toLowerSymbol(json.get("s").asText());
+        return Trade.builder().symbol(symbol).askUserId(symbolInfo.getSymbolAo().getOffsetSellRobotId().intValue()).askId(0L)
                 .bidUserId(symbolInfo.getSymbolAo().getOffsetBuyRobotId().intValue()).bidId(0L)
                 .trendSide(isBuy ? Side.BUY : Side.SELL).price(price).volume(volume).ctime(new Date())
                 .mtime(new Date()).build();

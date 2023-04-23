@@ -41,6 +41,22 @@ public class DepthController {
         return list;
     }
 
+    @RequestMapping(value = "/best/symbol", method = RequestMethod.GET)
+    @ResponseBody
+    public Object queryBest(String symbol) {
+        SymbolInfo symbolInfo = dataCenter.getSymbolInfo(symbol);
+        if(symbolInfo == null) {
+            return Collections.EMPTY_LIST;
+        }
+        List<Pair> list = new ArrayList<>();
+        list.add(new Pair<>(symbolInfo.getOwnerOrderBook().getBestBuy(),symbolInfo.getOwnerOrderBook().getBestSell()));
+        for(String child : symbolInfo.getChildSymbol()) {
+            SubscribedOrderBook book = symbolInfo.getChildSubscribedOrderBook(child);
+            list.add(new Pair<>(book.getBestBuy(),book.getBestSell()));
+        }
+        return list;
+    }
+
     @RequestMapping(value = "/all/symbols", method = RequestMethod.GET)
     @ResponseBody
     public Object querySymbol() {

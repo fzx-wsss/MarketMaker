@@ -29,12 +29,14 @@ public class TriangleTradeDesignPolicy extends AbstractTradeDesignPolicy {
 
     @Override
     public Trade designTrade(Trade trade) {
-        if(!cbSymbol.equals(trade.getSymbol())) {
+        if(!cbSymbol.equals(trade.getSymbol())
+                || abOrderBook.getBestBuy() == null
+                || abOrderBook.getBestSell() == null) {
             return null;
         }
         int priceScale = symbolInfo.getSymbolAo().getShowPriceScale();
         int volumeScale = symbolInfo.getSymbolAo().getShowVolumeScale();
-        int round = trade.getTrendSide() == Side.BUY ? BigDecimal.ROUND_CEILING : BigDecimal.ROUND_FLOOR;
+        int round = trade.getTrendSide() == Side.BUY ? BigDecimal.ROUND_FLOOR : BigDecimal.ROUND_CEILING;
         BigDecimal abPrice = abOrderBook.getBestBuy().add(abOrderBook.getBestSell()).divide(TWO,priceScale,round);
         BigDecimal cbPrice = trade.getPrice();
 
@@ -47,6 +49,7 @@ public class TriangleTradeDesignPolicy extends AbstractTradeDesignPolicy {
         }
         trade.setVolume(caVolume);
         trade.setPrice(caPrice);
+        trade.setSymbol(symbolInfo.getSymbol());
         return trade;
     }
 

@@ -65,7 +65,7 @@ public class TriangleDepthDesignPolicy extends AbstractDepthDesignPolicy {
 
         int priceScale = symbolInfo.getSymbolAo().getShowPriceScale();
         int volumeScale = symbolInfo.getSymbolAo().getShowVolumeScale();
-
+        caOrderBook.clear();
         List<BigDecimal> abBuys = new ArrayList<>(abOrderBook.getBuyPrices());
         List<BigDecimal> cbSells = new ArrayList<>(cbOrderBook.getSellPrices());
         int min = Math.min(abBuys.size(), cbSells.size());
@@ -90,7 +90,7 @@ public class TriangleDepthDesignPolicy extends AbstractDepthDesignPolicy {
             BigDecimal cbPrice = cbBuys.get(i);
             if (abPrice.compareTo(BigDecimal.ZERO) > 0) {
                 // BigDecimal abVolume = Fmt.dec(abBook.getBidSize(abBidPrices[i]), ab.getSizeFractionDigits());
-                BigDecimal caPrice = cbPrice.divide(abPrice, priceScale, BigDecimal.ROUND_CEILING);
+                BigDecimal caPrice = cbPrice.divide(abPrice, priceScale, BigDecimal.ROUND_FLOOR);
                 BigDecimal cbVolume = cbOrderBook.getBuyBook(cbPrice).getVolume().setScale(volumeScale,BigDecimal.ROUND_CEILING);
                 if (caPrice.compareTo(BigDecimal.ZERO) > 0) {
                     caOrderBook.update(Side.BUY, caPrice, cbVolume, Source.Bitrue);

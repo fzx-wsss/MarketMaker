@@ -23,14 +23,17 @@ public class SymbolConfig {
     public static Map<String, BigDecimal> bigDecimalMap = new CacheMap<>(k -> new BigDecimal(k));
 
     @Getter
-    @ApolloJsonValue("${market.maker.support.symbols:[\"btcusdt\",\"ethusdt\",\"xrpusdt\",\"etcbtc\",\"bchbtc\",\"ltcbtc\"]}")
+    @ApolloJsonValue("${market.maker.support.symbols:[galaxrp]}")
     private Set<String> supportSymbols;
     @Getter
-    @ApolloJsonValue("${market.maker.debug.symbols:[etcbtc]}")
+    @ApolloJsonValue("${market.maker.debug.symbols:[]}")
     private Set<String> debugSymbols;
     @ApolloJsonValue("${market.maker.mapping.symbols:{}}")
     private Map<String,String> mappingSymbols;
-    @ApolloJsonValue("${market.maker.triangle.symbols:{}}")
+    /**
+     * key:ca, value:ab
+     */
+    @ApolloJsonValue("${market.maker.triangle.symbols:{galaxrp:xrpusdt}}")
     private Map<String,String> triangleSymbols;
     @Getter
     @ApolloJsonValue("${market.maker.monitor.symbols:[btcusdt]}")
