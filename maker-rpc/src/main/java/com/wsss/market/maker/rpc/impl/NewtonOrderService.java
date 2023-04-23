@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-public class EinsteinOrderService implements OrderService {
+public class NewtonOrderService implements OrderService {
     @Override
     public void placeOrCancelOrders(String symbol, List<OrderCommand> orders) {
         return;
