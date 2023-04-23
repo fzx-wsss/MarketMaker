@@ -105,14 +105,28 @@ public class DataCenter {
     }
 
     private void removeDepth(Set<String> symbolInfos) {
-        for (BiAnDepthSubscriber subscriber : depthSubscribers) {
+        Iterator<BiAnDepthSubscriber> iterator = depthSubscribers.iterator();
+        while(iterator.hasNext()) {
+            BiAnDepthSubscriber subscriber = iterator.next();
             subscriber.remove(symbolInfos);
+            if(subscriber.getSubscribedSymbol().isEmpty()) {
+                log.info("关闭深度订阅");
+                subscriber.close();
+                iterator.remove();
+            }
         }
     }
 
     private void removeTrade(Set<String> symbolInfos) {
-        for (BiAnTradeSubscriber subscriber : tradeSubscribers) {
+        Iterator<BiAnTradeSubscriber> iterator = tradeSubscribers.iterator();
+        while(iterator.hasNext()) {
+            BiAnTradeSubscriber subscriber = iterator.next();
             subscriber.remove(symbolInfos);
+            if(subscriber.getSubscribedSymbol().isEmpty()) {
+                log.info("关闭成交订阅");
+                subscriber.close();
+                iterator.remove();
+            }
         }
     }
 

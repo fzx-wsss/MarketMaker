@@ -30,7 +30,7 @@ public class NettyWSClient implements WSClient {
     private URI websocketURI;
     private WSListener wsListener;
     private Channel channel;
-    private NioEventLoopGroup group = new NioEventLoopGroup(1);
+    private NioEventLoopGroup group = null;
     private static final NioEventLoopGroup reconnectGroup = new NioEventLoopGroup(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("reconnect").build());
     @Getter
     private volatile boolean close = true;
@@ -50,6 +50,7 @@ public class NettyWSClient implements WSClient {
             return;
         }
         close = false;
+        group = new NioEventLoopGroup(1);
         //netty基本操作，启动类
         Bootstrap boot = new Bootstrap();
         boot.option(ChannelOption.SO_KEEPALIVE, true).option(ChannelOption.TCP_NODELAY, true).group(group)
@@ -123,6 +124,7 @@ public class NettyWSClient implements WSClient {
             close = true;
             channel.close();
             channel = null;
+            group.shutdownGracefully();
         }
     }
 

@@ -68,9 +68,6 @@ public abstract class AbstractSubscriber {
         return true;
     }
 
-    protected abstract void doRegisterMsg(Collection<String> symbols);
-    protected abstract void doRemoveMsg(Collection<String> symbols);
-
     protected void sendMsg(String sendMsg) {
         log.info("bi an sendMsg:{}",sendMsg);
         wsClient.send(sendMsg);
@@ -87,8 +84,14 @@ public abstract class AbstractSubscriber {
         }
     }
 
-    protected abstract String getSteamUrl();
+    public void close() {
+        wsClient.close();
+    }
 
+    protected abstract void doRegisterMsg(Collection<String> symbols);
+    protected abstract void doRemoveMsg(Collection<String> symbols);
+
+    protected abstract String getSteamUrl();
     protected abstract WSListener getWSListener();
 
 

@@ -3,6 +3,7 @@ package com.wsss.market.maker.service.thread.pool;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import com.wsss.market.maker.service.task.AbstractAsyncTask;
+import com.wsss.market.maker.service.task.AsyncTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
@@ -20,9 +21,9 @@ public class MarkerMakerThreadPool {
     // 用于成交计算的线程
     private TradeProcessThread[] tradeProcessThreads = new TradeProcessThread[Runtime.getRuntime().availableProcessors()];
     // 用于io等待的线程
-    private ExecutorService designOrderExecutor = new ThreadPoolExecutor(0, 500,
+    private ExecutorService designOrderExecutor = new ThreadPoolExecutor(100, 500,
             60L, TimeUnit.SECONDS,
-            new SynchronousQueue<Runnable>(),
+            new ArrayBlockingQueue<>(3000),
             new ThreadFactory() {
                 private AtomicInteger count = new AtomicInteger(1);
 
@@ -37,6 +38,11 @@ public class MarkerMakerThreadPool {
             new RejectedExecutionHandler() {
                 @Override
                 public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                    if(r instanceof FutureTask) {
+                        r.run();
+                        log.error("executorService is full");
+                        return;
+                    }
                     AbstractAsyncTask orderTask = (AbstractAsyncTask)r;
                     orderTask.finish();
                     String symbol = orderTask.getSymbolInfo().getSymbol();
@@ -83,5 +89,33 @@ public class MarkerMakerThreadPool {
 
     public static ScheduledExecutorService getShareExecutor() {
         return executorService;
+    }
+
+    public static void main(String[] args) {
+        MarkerMakerThreadPool pool = new MarkerMakerThreadPool();
+        pool.execAsyncTask(new AsyncTask<Object>() {
+
+            @Override
+            public Object call() throws Exception {
+                TimeUnit.MINUTES.sleep(1);
+                return null;
+            }
+        });
+        pool.execAsyncTask(new AsyncTask<Object>() {
+
+            @Override
+            public Object call() throws Exception {
+                TimeUnit.MINUTES.sleep(1);
+                return null;
+            }
+        });
+        pool.execAsyncTask(new AsyncTask<Object>() {
+
+            @Override
+            public Object call() throws Exception {
+                TimeUnit.MINUTES.sleep(1);
+                return null;
+            }
+        });
     }
 }
