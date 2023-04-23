@@ -41,6 +41,12 @@ public class DepthController {
         return list;
     }
 
+    @RequestMapping(value = "/all/symbols", method = RequestMethod.GET)
+    @ResponseBody
+    public Object querySymbol() {
+        return dataCenter.registeredSymbols();
+    }
+
     @RequestMapping(value = "/cancel/symbol", method = RequestMethod.POST)
     @ResponseBody
     public boolean cancelOrder(@RequestBody Set<String> symbols) {

@@ -22,7 +22,7 @@ public class MarkerMakerThreadPool {
     // 用于成交计算的线程
     private TradeProcessThread[] tradeProcessThreads = new TradeProcessThread[Runtime.getRuntime().availableProcessors()];
     // 用于io等待的线程
-    private ExecutorService designOrderExecutor = new ThreadPoolExecutor(100, 500,
+    private ExecutorService designOrderExecutor = new ThreadPoolExecutor(100, 1000,
             60L, TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(3000),
             new ThreadFactory() {

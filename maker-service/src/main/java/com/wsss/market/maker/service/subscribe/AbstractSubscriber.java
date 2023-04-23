@@ -1,5 +1,6 @@
 package com.wsss.market.maker.service.subscribe;
 
+import com.google.common.collect.Sets;
 import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.ws.WSClient;
 import com.wsss.market.maker.model.ws.WSListener;
@@ -49,7 +50,8 @@ public abstract class AbstractSubscriber {
             return true;
         }
         try {
-            doRegisterMsg(symbols);
+            Set<String> add = Sets.difference(new HashSet<>(symbols), subscribedSymbol);
+            doRegisterMsg(add);
         } finally {
             subscribedSymbol.addAll(symbols);
         }
@@ -61,7 +63,9 @@ public abstract class AbstractSubscriber {
             return true;
         }
         try {
-            doRemoveMsg(symbols);
+            Set<String> remove = new HashSet<>(subscribedSymbol);
+            remove.retainAll(symbols);
+            doRemoveMsg(remove);
         } finally {
             subscribedSymbol.removeAll(symbols);
         }
@@ -93,6 +97,4 @@ public abstract class AbstractSubscriber {
 
     protected abstract String getSteamUrl();
     protected abstract WSListener getWSListener();
-
-
 }
