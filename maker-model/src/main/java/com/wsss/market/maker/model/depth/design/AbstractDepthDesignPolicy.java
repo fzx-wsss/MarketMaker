@@ -50,13 +50,15 @@ public abstract class AbstractDepthDesignPolicy implements DepthDesignPolicy {
 
     protected void randomReplaceOrder(Set<BigDecimal> ownerBuyPrices,Set<BigDecimal> ownerSellPrices
             , Map<BigDecimal, List<Depth>> followBuyDepths,Map<BigDecimal, List<Depth>> followSellDepths, MakerContext makerContext) {
-
+        int rate = makerConfig.getReplaceRate();
+        if(rate < 0) {
+            return;
+        }
         timeSieve.moreThanExec(()-> {
             OwnerOrderBook ownerOrderBook = symbolInfo.getOwnerOrderBook();
             int volScale = symbolInfo.getSymbolAo().getShowVolumeScale();
             double volRandomNum = makerConfig.getVolRandomNum(symbolInfo.getSymbolAo());
             double volMultipleNum = makerConfig.getVolMultipleNum(symbolInfo.getSymbolAo());
-            int rate = makerConfig.getReplaceRate();
             ownerBuyPrices.forEach(p -> {
                 if(ThreadLocalRandom.current().nextInt(1000) >= rate) {
                     return;

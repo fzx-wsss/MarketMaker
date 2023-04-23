@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -61,7 +62,7 @@ public class DepthProcessThread implements Runnable {
                 CompositeTask task = CompositeTask.builder().symbolInfo(symbolInfo).build();
                 queryOwnerLimitMap.get(symbol).moreThanExec(() -> {
                     task.addTask(QueryOwnerOrderTask.builder().symbol(symbolInfo).build());
-                }, makerConfig.getSyncTime());
+                }, TimeUnit.SECONDS.toMillis(makerConfig.getSyncTime()));
 
                 if (limitOrderFrequency(symbolInfo)) {
                     MakeOrderTask orderTask = createMakeOrderTask(symbolInfo);

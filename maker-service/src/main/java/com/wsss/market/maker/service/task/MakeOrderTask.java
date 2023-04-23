@@ -8,15 +8,15 @@ import com.wsss.market.maker.model.domain.OwnerOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.domain.maker.Operation;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
+import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.rpc.OrderService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Getter
@@ -47,19 +47,15 @@ public class MakeOrderTask extends AbstractAsyncTask<Boolean> {
     }
 
     public void designOrder() {
-        try {
-            List<OrderCommand> list = Stream.concat(
-                            placeOrderList.stream().map(o->OrderCommand.builder().operation(Operation.PLACE).build()),
-                            cancelOrderList.stream().map(o->OrderCommand.builder().operation(Operation.CANCEL).build()))
-                    .collect(Collectors.toList());
-            Collections.shuffle(list);
-            orderService.placeOrCancelOrders(symbolInfo.getSymbol(), list);
-            if(symbolInfo.isDebugLog()) {
-                log.info("placeOrderList size:{},cancelOrderList size:{}",placeOrderList.size(),cancelOrderList.size());
-            }
-
-        }catch (Exception e) {
-            log.error("error",e);
+        List<OrderCommand> list = new ArrayList<>(placeOrderList.size() + cancelOrderList.size());
+        placeOrderList.forEach(o->list.add(OrderCommand.builder().operation(Operation.PLACE).build()));
+        cancelOrderList.forEach(o->list.add(OrderCommand.builder().operation(Operation.CANCEL).build()));
+        Collections.shuffle(list);
+        Perf.count("place_order_num",symbolInfo);
+        Perf.count("cancel_order_num",symbolInfo);
+        orderService.placeOrCancelOrders(symbolInfo.getSymbol(), list);
+        if(symbolInfo.isDebugLog()) {
+            log.info("placeOrderList size:{},cancelOrderList size:{}",placeOrderList.size(),cancelOrderList.size());
         }
     }
 
