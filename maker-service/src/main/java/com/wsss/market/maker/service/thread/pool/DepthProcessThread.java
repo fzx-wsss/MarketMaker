@@ -58,7 +58,7 @@ public class DepthProcessThread implements Runnable {
                 SymbolInfo symbolInfo = dataCenter.getSymbolInfo(symbol);
                 transferOrderBook(symbolInfo);
 
-                CompositeTask task = CompositeTask.builder().symbolInfo(symbolInfo).pool(markerMakerThreadPool).build();
+                CompositeTask task = CompositeTask.builder().symbolInfo(symbolInfo).build();
                 queryOwnerLimitMap.get(symbol).moreThanExec(() -> {
                     task.addTask(QueryOwnerOrderTask.builder().symbol(symbolInfo).build());
                 }, makerConfig.getSyncTime());

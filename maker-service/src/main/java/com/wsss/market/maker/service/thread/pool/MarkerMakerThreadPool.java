@@ -2,6 +2,7 @@ package com.wsss.market.maker.service.thread.pool;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
+import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.service.task.AbstractAsyncTask;
 import com.wsss.market.maker.service.task.AsyncTask;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +85,7 @@ public class MarkerMakerThreadPool {
     }
 
     public <T> Future<T> execAsyncTask(Callable<T> task) {
+        Perf.count("exec_async_task");
         return designOrderExecutor.submit(task);
     }
 
