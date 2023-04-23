@@ -51,7 +51,7 @@ public class SymbolInfo {
     private volatile DepthDesignPolicy depthDesignPolicy;
     private volatile TradeDesignPolicy tradeDesignPolicy;
     private OwnerOrderBook ownerOrderBook;
-    private UserBBO userBBO;
+    private volatile UserBBO userBBO;
 
     public SymbolInfo(String symbol) {
         this.symbol = symbol;
