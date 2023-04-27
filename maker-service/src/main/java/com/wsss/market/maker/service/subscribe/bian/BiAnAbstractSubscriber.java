@@ -19,19 +19,19 @@ public abstract class BiAnAbstractSubscriber extends AbstractSubscriber {
     @Override
     protected void doRegisterMsg(Collection<String> symbols) {
         BiAnSubMsg msg = buildRegisterMsg(symbols);
-        sendMsg(msg);
+        sendBiAnMsg(msg);
     }
 
     @Override
     protected void doRemoveMsg(Collection<String> symbols) {
         BiAnSubMsg msg = buildRemoveMsg(symbols);
-        sendMsg(msg);
+        sendBiAnMsg(msg);
     }
 
-    protected void sendMsg(BiAnSubMsg msg) {
+    protected void sendBiAnMsg(BiAnSubMsg msg) {
         try {
             String sendMsg = JsonUtil.encode(msg);
-            sendMsg(sendMsg);
+            super.sendMsg(sendMsg);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -93,7 +93,7 @@ public abstract class BiAnAbstractSubscriber extends AbstractSubscriber {
 
         @Override
         public void success() {
-            register(new ArrayList<>(subscribedSymbol));
+            reRegister(subscribedSymbol);
         }
 
         @Override

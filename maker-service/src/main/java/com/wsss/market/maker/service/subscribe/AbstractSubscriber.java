@@ -58,6 +58,13 @@ public abstract class AbstractSubscriber {
         return true;
     }
 
+    protected void reRegister(Collection<String> symbols) {
+        if(symbols.isEmpty()) {
+            return;
+        }
+        doRegisterMsg(symbols);
+    }
+
     public boolean remove(Set<String> symbols) {
         if(symbols.isEmpty()) {
             return true;
@@ -73,7 +80,7 @@ public abstract class AbstractSubscriber {
     }
 
     protected void sendMsg(String sendMsg) {
-        log.info("bi an sendMsg:{}",sendMsg);
+        log.info("sendMsg:{}",sendMsg);
         wsClient.send(sendMsg);
     }
 
