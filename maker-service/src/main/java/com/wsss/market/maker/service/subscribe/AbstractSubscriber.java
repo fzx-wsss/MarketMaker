@@ -46,11 +46,11 @@ public abstract class AbstractSubscriber {
     }
 
     public boolean register(Collection<String> symbols) {
-        if(symbols.isEmpty()) {
-            return true;
-        }
         try {
             Set<String> add = Sets.difference(new HashSet<>(symbols), subscribedSymbol);
+            if(add.isEmpty()) {
+                return true;
+            }
             doRegisterMsg(add);
         } finally {
             subscribedSymbol.addAll(symbols);
@@ -66,12 +66,12 @@ public abstract class AbstractSubscriber {
     }
 
     public boolean remove(Set<String> symbols) {
-        if(symbols.isEmpty()) {
-            return true;
-        }
         try {
             Set<String> remove = new HashSet<>(subscribedSymbol);
             remove.retainAll(symbols);
+            if(remove.isEmpty()) {
+                return true;
+            }
             doRemoveMsg(remove);
         } finally {
             subscribedSymbol.removeAll(symbols);
