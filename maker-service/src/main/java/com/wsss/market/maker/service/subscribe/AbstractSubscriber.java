@@ -1,6 +1,7 @@
 package com.wsss.market.maker.service.subscribe;
 
 import com.google.common.collect.Sets;
+import com.wsss.market.maker.model.config.SourceConfig;
 import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.ws.WSClient;
 import com.wsss.market.maker.model.ws.WSListener;
@@ -10,7 +11,6 @@ import com.wsss.market.maker.service.thread.pool.MarkerMakerThreadPool;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public abstract class AbstractSubscriber {
+public abstract class AbstractSubscriber implements Subscriber {
     private WSClient wsClient;
     private long lastReceiveTime = System.currentTimeMillis();
 
@@ -29,12 +29,12 @@ public abstract class AbstractSubscriber {
     protected DataCenter dataCenter;
     @Resource
     protected MarkerMakerThreadPool markerMakerThreadPool;
+    @Resource
+    protected SourceConfig sourceConfig;
 
     @Getter
     protected Set<String> subscribedSymbol = new HashSet<>();
 
-
-    @PostConstruct
     public void init() {
         try {
             wsClient = NettyWSClient.builder().websocketURI(new URI(getSteamUrl())).wsListener(getWSListener()).build();
@@ -45,9 +45,13 @@ public abstract class AbstractSubscriber {
         }
     }
 
-    public boolean register(Collection<String> symbols) {
+    protected WSListener getWSListener() {
+        return this;
+    }
+
+    public boolean register(Set<String> symbols) {
         try {
-            Set<String> add = Sets.difference(new HashSet<>(symbols), subscribedSymbol);
+            Set<String> add = Sets.difference(symbols, subscribedSymbol);
             if(add.isEmpty()) {
                 return true;
             }
@@ -84,6 +88,22 @@ public abstract class AbstractSubscriber {
         wsClient.send(sendMsg);
     }
 
+
+    @Override
+    public void receive(byte[] msg) {
+
+    }
+
+    @Override
+    public void success() {
+        reRegister(subscribedSymbol);
+    }
+
+    @Override
+    public void inactive() {
+
+    }
+
     protected void updateLastReceiveTime() {
         lastReceiveTime = System.currentTimeMillis();
     }
@@ -103,5 +123,4 @@ public abstract class AbstractSubscriber {
     protected abstract void doRemoveMsg(Collection<String> symbols);
 
     protected abstract String getSteamUrl();
-    protected abstract WSListener getWSListener();
 }

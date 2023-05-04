@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 @Slf4j
@@ -22,15 +24,44 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
 
     @Resource
     private MakerConfig makerConfig;
-    private long eventId;
+    private Map<Source, SingleOrderBook> singleOrderBooks = new CacheMap<>(k->new SingleOrderBook());
     public SubscribedOrderBook(SymbolInfo symbolInfo) {
         this.symbolInfo = symbolInfo;
     }
 
     @Override
-    public void clear() {
-        super.clear();
-        eventId = 0;
+    public void clearAll() {
+        super.clearAll();
+        singleOrderBooks.clear();
+    }
+
+    public void clear(Source source) {
+        SingleOrderBook singleOrderBook = singleOrderBooks.remove(source);
+        if(singleOrderBook == null) {
+            return;
+        }
+        clear(singleOrderBook.stream(Side.BUY).iterator());
+        clear(singleOrderBook.stream(Side.SELL).iterator());
+    }
+
+    private void clear(Iterator<Map.Entry<BigDecimal,Depth>> iterator) {
+        while (iterator.hasNext()) {
+            Map.Entry<BigDecimal,Depth> entry = iterator.next();
+            Depth depth = entry.getValue();
+            BigDecimal sourceVolume = depth.getVolume();
+            depth.sub(sourceVolume);
+            if(BigDecimal.ZERO.compareTo(depth.getVolume()) == 0) {
+                iterator.remove();
+            }
+        }
+    }
+
+    public void setEventId(Source source,long eventId) {
+        SingleOrderBook singleOrderBook = singleOrderBooks.get(source);
+        singleOrderBook.eventId = eventId;
+    }
+    public long getEventId(Source source) {
+        return singleOrderBooks.get(source).eventId;
     }
 
     /**
@@ -38,25 +69,54 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
      * 当更新的价格所在的位置超出了map的最大档位时，认为更新无效，其余情况均认为成功
      */
     public boolean update(Side side, BigDecimal price, BigDecimal volume, Source source) {
-        ConcurrentSkipListMap<BigDecimal,Depth> map = side == Side.BUY ? buys : sells;
-        Depth depth = map.get(price);
-        if(depth == null && BigDecimal.ZERO.compareTo(volume) == 0) {
-            // 推送时会出现第一次出现的深度为0的情况，可能是在中间版本出现过，这种情况不需要处理
+        ConcurrentSkipListMap<BigDecimal,Depth> sumMap = getMap(side);
+        Depth sumDepth = sumMap.get(price);
+        if(sumDepth == null) {
+            sumDepth = sumMap.computeIfAbsent(price, p->Depth.builder().side(side).price(price).build());
+        }
+        BigDecimal old = singleOrderBooks.get(source).update(side,price,volume);
+
+        sumDepth.sub(old).add(volume);
+        if(BigDecimal.ZERO.compareTo(sumDepth.getVolume()) == 0) {
+            sumMap.remove(price);
             return true;
         }
-        if(depth == null) {
-            depth = map.computeIfAbsent(price, p->Depth.builder().side(side).price(price).build());
-        }
-        BigDecimal sum = depth.update(source,volume);
-        if(BigDecimal.ZERO.compareTo(sum) == 0) {
-            map.remove(price);
-        }
-        if(map.size() > makerConfig.getMemOrderBookLimit()) {
+
+        ConcurrentSkipListMap<BigDecimal,Depth> singleMap = singleOrderBooks.get(source).getMap(side);
+        if(singleMap.size() > makerConfig.getMemOrderBookLimit()) {
             // 在多数据源的情况下，这可能导致最后的一些档位的volume少于实际多数据源的总和
-            map.remove(map.lastKey());
-            return !side.isAfter(map.lastKey(),price);
+            BigDecimal lastPrice = singleMap.lastKey();
+            Depth depth = singleMap.remove(lastPrice);
+            sumDepth = sumMap.get(lastPrice);
+            sumDepth.sub(depth.getVolume());
+            if(BigDecimal.ZERO.compareTo(sumDepth.getVolume()) == 0) {
+                sumMap.remove(lastPrice);
+            }
+            return !side.isAfter(singleMap.lastKey(),price);
         }
         return true;
+    }
+
+    private class SingleOrderBook extends AbstractOrderBook<Depth> {
+        private long eventId;
+
+        public BigDecimal update(Side side, BigDecimal price, BigDecimal volume) {
+            ConcurrentSkipListMap<BigDecimal,Depth> singleMap = getMap(side);
+            Depth singleDepth = singleMap.get(price);
+            if(singleDepth == null && BigDecimal.ZERO.compareTo(volume) == 0) {
+                // 推送时会出现第一次出现的深度为0的情况，可能是在中间版本出现过，这种情况不需要处理
+                return BigDecimal.ZERO;
+            }
+            if(singleDepth == null) {
+                singleDepth = singleMap.computeIfAbsent(price, p->Depth.builder().side(side).price(price).build());
+            }
+            BigDecimal old = singleDepth.getVolume();
+            if(BigDecimal.ZERO.compareTo(volume) == 0) {
+                singleMap.remove(price);
+            }
+            singleDepth.update(volume);
+            return old;
+        }
     }
 
     public static void main(String[] args) {

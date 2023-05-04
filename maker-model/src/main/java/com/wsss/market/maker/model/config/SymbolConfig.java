@@ -4,9 +4,11 @@ import com.cmcm.finance.ccc.client.model.SymbolAoWithFeatureAndExtra;
 import com.ctrip.framework.apollo.spring.annotation.ApolloJsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.wsss.market.maker.model.domain.CacheMap;
+import com.wsss.market.maker.model.domain.Source;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +59,25 @@ public class SymbolConfig {
     @Getter
     @Value("${market.maker.subscribe.max.receive.time:300}")
     private int maxReceiveTime;
+
+    @Value("${market.maker.subscribe.default.sub.source:Okex}")
+    private Set<String> defaultSubSource;
+    String SUBSCRIBE_SOURCE = SymbolConfig.LOKI_CONFIG + "subscribe";
+
+    public Set<Source> getSubscribeSource(SymbolAoWithFeatureAndExtra symbolAo) {
+        if(symbolAo == null) {
+            return Source.getSource(defaultSubSource);
+        }
+        String v = getJsonNodeValue(symbolAo,SUBSCRIBE_SOURCE,String.class);
+        if(StringUtils.isNotEmpty(v)) {
+            String[] sources = v.split(",");
+            Set<Source> res = Source.getSource(sources);
+            if(!res.isEmpty()) {
+                return res;
+            }
+        }
+        return Source.getSource(defaultSubSource);
+    }
 
     public String getMappingSymbol(SymbolAoWithFeatureAndExtra symbolAo) {
         if(symbolAo == null) {

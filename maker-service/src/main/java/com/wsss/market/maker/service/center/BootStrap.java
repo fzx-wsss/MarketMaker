@@ -1,7 +1,7 @@
 package com.wsss.market.maker.service.center;
 
 import com.cmcm.finance.ccc.client.CoinConfigCenterClient;
-import com.wsss.market.maker.model.config.BiAnConfig;
+import com.wsss.market.maker.model.config.SourceConfig;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.service.thread.pool.MarkerMakerThreadPool;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, InitializingBean, DisposableBean {
     private static boolean start = false;
     @Resource
-    private BiAnConfig biAnConfig;
+    private SourceConfig sourceConfig;
     @Resource
     private DataCenter dataCenter;
     @Resource
@@ -39,7 +39,7 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        ConfigCenter.setApolloConfig(biAnConfig);
+        ConfigCenter.setApolloConfig(sourceConfig);
     }
 
     @Override
@@ -50,10 +50,9 @@ public class BootStrap implements ApplicationListener<ContextRefreshedEvent>, In
         log.info("启动应用");
         start = true;
 
-        reload();
         MarkerMakerThreadPool.getShareExecutor().scheduleWithFixedDelay(() -> {
             reload();
-        }, symbolConfig.getReloadTime(), symbolConfig.getReloadTime(), TimeUnit.SECONDS);
+        }, 0, symbolConfig.getReloadTime(), TimeUnit.SECONDS);
         MarkerMakerThreadPool.getShareExecutor().scheduleWithFixedDelay(() -> {
             dataCenter.wakeUpDepthAllSymbol();
             dataCenter.checkSubscriber();

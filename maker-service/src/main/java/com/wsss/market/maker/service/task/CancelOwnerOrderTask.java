@@ -51,7 +51,7 @@ public class CancelOwnerOrderTask extends AbstractAsyncTask<Boolean> {
         List<OrderCommand> orderCommands = list.stream().map(o-> OrderCommand.builder().order(o).operation(Operation.CANCEL).build()).collect(Collectors.toList());
         log.info("{} cancel order size:{}",orderCommands.size());
         orderService.placeOrCancelOrders(symbolInfo.getSymbol(), orderCommands);
-        orderBook.clear();
+        orderBook.clearAll();
     }
 
     private void cancelOrderByUid(int uid) {

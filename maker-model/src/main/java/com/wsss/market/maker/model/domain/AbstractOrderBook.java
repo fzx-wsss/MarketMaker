@@ -77,7 +77,7 @@ public class AbstractOrderBook<T> {
         return map.remove(price);
     }
 
-    public void clear() {
+    public void clearAll() {
         buys.clear();
         sells.clear();
     }

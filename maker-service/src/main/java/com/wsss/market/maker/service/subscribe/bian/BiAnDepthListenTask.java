@@ -41,16 +41,17 @@ public class BiAnDepthListenTask implements DepthListenTask {
                 return;
             }
 
-            if(evtFirstId > subscribedOrderBook.getEventId() + 1 || subscribedOrderBook.getEventId() == 0) {
-                log.info("{} Bian evtFirstId:{},evtLastId:{},orderBook eventId:{}",symbol,evtFirstId,evtLastId, subscribedOrderBook.getEventId());
+            long eventId = subscribedOrderBook.getEventId(Source.Binance);
+            if(evtFirstId > eventId + 1 || eventId == 0) {
+                log.info("{} Bian evtFirstId:{},evtLastId:{},orderBook eventId:{}",symbol,evtFirstId,evtLastId, eventId);
                 initOrderBook(symbol, subscribedOrderBook);
             }
-            if(evtLastId <= subscribedOrderBook.getEventId()) {
+            if(evtLastId <= eventId) {
                 return;
             }
 
-            if(evtFirstId != subscribedOrderBook.getEventId() + 1) {
-                log.info("{} Bian evtFirstId:{},evtLastId:{},orderBook eventId:{}",symbol,evtFirstId,evtLastId, subscribedOrderBook.getEventId());
+            if(evtFirstId != eventId + 1) {
+                log.info("{} Bian evtFirstId:{},evtLastId:{},orderBook eventId:{}",symbol,evtFirstId,evtLastId, eventId);
             }
             JsonNode bids = json.get("b");
             JsonNode asks = json.get("a");
@@ -71,14 +72,14 @@ public class BiAnDepthListenTask implements DepthListenTask {
         JsonNode bids = root.get("bids");
         JsonNode asks = root.get("asks");
         long lastId = root.get("lastUpdateId").asLong();
-        subscribedOrderBook.clear();
+        subscribedOrderBook.clear(Source.Binance);
         updateOrderBook(lastId,bids,asks, subscribedOrderBook);
     }
 
     private void updateOrderBook(long eventId, JsonNode buys,JsonNode sells, SubscribedOrderBook subscribedOrderBook) {
         updateOrderBook(Side.BUY,buys, subscribedOrderBook);
         updateOrderBook(Side.SELL,sells, subscribedOrderBook);
-        subscribedOrderBook.setEventId(eventId);
+        subscribedOrderBook.setEventId(Source.Binance,eventId);
     }
 
     private void updateOrderBook(Side side, JsonNode priceLevels, SubscribedOrderBook subscribedOrderBook) {

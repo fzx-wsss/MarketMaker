@@ -1,7 +1,6 @@
 package com.wsss.market.maker.model.config;
 
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.wsss.market.maker.model.limit.MakerLimitType;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,38 +9,28 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Configuration
 @EnableApolloConfig
-public class BiAnConfig {
-    private static BiAnConfig cache;
+public class SourceConfig {
+    private static SourceConfig cache;
     @Value("${binance.steam.depth.url:wss://stream.binance.com:443/stream}")
-    public String binanceSteamUrl;
+    private String binanceSteamUrl;
     /**
      * 请求币安的快照地址
      */
     @Value("${binance.rest.depth.url:https://www.binance.com/api/v1/depth}")
-    public String binanceDepthUrl;
+    private String binanceDepthUrl;
     /**
      * 请求的快照深度限制
      */
     @Value("${binance.rest.depth.limit:100}")
-    public String limit;
+    private String limit;
 
-    /**
-     * 摆盘的最小间隔
-     */
-    @Value("${market.maker.depth.min.interval:10}")
-    public long minInterval;
 
-    @Value("${market.maker.depth.default.limit.type:ALWAYS}")
-    public String limitType;
+    @Value("${ok.steam.depth.url:wss://wsaws.okx.com:8443/ws/v5/public}")
+    private String okSteamUrl;
 
-    public MakerLimitType getLimitType() {
-
-        return MakerLimitType.getByName(limitType);
-    }
-
-    public static BiAnConfig getInstance() {
+    public static SourceConfig getInstance() {
         if(cache == null) {
-            cache = ApplicationUtils.getSpringBean(BiAnConfig.class);
+            cache = ApplicationUtils.getSpringBean(SourceConfig.class);
         }
         return cache;
     }

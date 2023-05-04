@@ -65,7 +65,7 @@ public class TriangleDepthDesignPolicy extends AbstractDepthDesignPolicy {
 
         int priceScale = symbolInfo.getSymbolAo().getShowPriceScale();
         int volumeScale = symbolInfo.getSymbolAo().getShowVolumeScale();
-        caOrderBook.clear();
+        caOrderBook.clearAll();
         List<BigDecimal> abBuys = new ArrayList<>(abOrderBook.getBuyPrices());
         List<BigDecimal> cbSells = new ArrayList<>(cbOrderBook.getSellPrices());
         int min = Math.min(abBuys.size(), cbSells.size());

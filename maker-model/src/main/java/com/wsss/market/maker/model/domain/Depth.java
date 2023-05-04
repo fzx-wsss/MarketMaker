@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @ToString
@@ -14,7 +12,6 @@ public class Depth {
     private Side side;
     private BigDecimal price;
     private BigDecimal volume = BigDecimal.ZERO;
-    private Map<Source, BigDecimal> sourceVolume = new ConcurrentHashMap<>();
 
     @Builder
     public Depth(Side side, BigDecimal price) {
@@ -22,15 +19,26 @@ public class Depth {
         this.price = price;
     }
 
-    public BigDecimal update(Source source, BigDecimal volume) {
-        BigDecimal old = sourceVolume.getOrDefault(source, BigDecimal.ZERO);
-        this.volume = this.volume.subtract(old).add(volume);
-
-        if (BigDecimal.ZERO.compareTo(volume) == 0) {
-            sourceVolume.remove(source);
-        } else {
-            sourceVolume.put(source, volume);
-        }
-        return volume;
+    public BigDecimal update(BigDecimal volume) {
+        BigDecimal old = this.volume;
+        this.volume = volume;
+        return old;
     }
+
+    public Depth add(BigDecimal volume) {
+        if(BigDecimal.ZERO.compareTo(volume) == 0) {
+            return this;
+        }
+        this.volume = this.volume.add(volume);
+        return this;
+    }
+
+    public Depth sub(BigDecimal volume) {
+        if(BigDecimal.ZERO.compareTo(volume) == 0) {
+            return this;
+        }
+        this.volume = this.volume.subtract(volume);
+        return this;
+    }
+
 }

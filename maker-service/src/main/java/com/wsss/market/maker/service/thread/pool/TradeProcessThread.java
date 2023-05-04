@@ -71,7 +71,9 @@ public class TradeProcessThread implements Runnable {
             }
 
             Trade trade = tradeTask.logTrade();
-            trade = tradeTask.getSymbol().getTradeDesignPolicy().designTrade(trade);
+            if(trade != null) {
+                trade = tradeTask.getSymbol().getTradeDesignPolicy().designTrade(trade);
+            }
             if(trade != null) {
                 map.get(trade.getSymbol()).add(trade);
             }
