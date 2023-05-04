@@ -60,9 +60,16 @@ public class SymbolConfig {
     @Value("${market.maker.subscribe.max.receive.time:300}")
     private int maxReceiveTime;
 
-    @Value("${market.maker.subscribe.default.sub.source:Okex}")
+    @Value("${market.maker.subscribe.default.sub.source:Okex,Binance}")
     private Set<String> defaultSubSource;
     String SUBSCRIBE_SOURCE = SymbolConfig.LOKI_CONFIG + "subscribe";
+
+    @Value("${market.maker.subscribe.source.price.diff:100}")
+    private long priceDiff;
+
+    public long getPriceDiff(SymbolAoWithFeatureAndExtra symbolAo) {
+        return priceDiff;
+    }
 
     public Set<Source> getSubscribeSource(SymbolAoWithFeatureAndExtra symbolAo) {
         if(symbolAo == null) {

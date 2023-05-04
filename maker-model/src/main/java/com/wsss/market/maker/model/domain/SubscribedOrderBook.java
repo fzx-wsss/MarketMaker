@@ -11,8 +11,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -29,6 +31,12 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
         this.symbolInfo = symbolInfo;
     }
 
+    public List<Source> getSourceByPrice(BigDecimal price,Side side) {
+        return singleOrderBooks.entrySet().stream()
+                .filter(e->e.getValue().getBook(price,side) != null)
+                .map(e->e.getKey())
+                .collect(Collectors.toList());
+    }
     @Override
     public void clearAll() {
         super.clearAll();

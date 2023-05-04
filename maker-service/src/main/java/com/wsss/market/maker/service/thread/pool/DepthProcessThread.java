@@ -3,13 +3,14 @@ package com.wsss.market.maker.service.thread.pool;
 import com.superatomfin.framework.monitor.Monitor;
 import com.superatomfin.share.tools.other.TimeSieve;
 import com.wsss.market.maker.model.config.MakerConfig;
-import com.wsss.market.maker.model.depth.design.MakerContext;
+import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.depth.design.DepthDesignPolicy;
-import com.wsss.market.maker.model.limit.MakerLimitPolicy;
+import com.wsss.market.maker.model.depth.design.MakerContext;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
+import com.wsss.market.maker.model.limit.MakerLimitPolicy;
 import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.service.center.DataCenter;
 import com.wsss.market.maker.service.subscribe.DepthListenTask;
@@ -36,12 +37,15 @@ import java.util.concurrent.TimeUnit;
 @Scope("prototype")
 public class DepthProcessThread implements Runnable {
     private BlockingQueue<String> queue = new LinkedBlockingQueue(10000);
+    private static final BigDecimal WAN = new BigDecimal(10000);
     @Resource
     private DataCenter dataCenter;
     @Resource
     private MarkerMakerThreadPool markerMakerThreadPool;
     @Resource
     private MakerConfig makerConfig;
+    @Resource
+    private SymbolConfig symbolConfig;
 
     private Map<String, AbstractAsyncTask> taskMap = new ConcurrentHashMap<>();
     private Map<String, TimeSieve> queryOwnerLimitMap = new CacheMap<>(k -> TimeSieve.builder().build());
@@ -150,7 +154,14 @@ public class DepthProcessThread implements Runnable {
         BigDecimal bestBuy = subscribedOrderBook.getBestBuy();
         BigDecimal bestSell = subscribedOrderBook.getBestSell();
         if (Objects.nonNull(bestBuy) && Objects.nonNull(bestSell) && bestBuy.compareTo(bestSell) >= 0) {
-            log.error("{} bestBuy >= bestSell", symbolInfo.getSymbol());
+            long diff = bestBuy.subtract(bestSell).multiply(WAN).longValue();
+            if(diff > symbolConfig.getPriceDiff(symbolInfo.getSymbolAo())) {
+                log.warn("{} price diff is bestBuy:{},{}; bestSell:{},{}",symbolInfo.getSymbol(),
+                        bestBuy,subscribedOrderBook.getSourceByPrice(bestBuy,Side.BUY),
+                        bestSell,subscribedOrderBook.getSourceByPrice(bestSell,Side.SELL)
+                );
+            }
+            Monitor.timer("source_price_diff").end(diff);
             subscribedOrderBook.getNearerBooks(bestBuy, Side.SELL).forEach(d -> subscribedOrderBook.remove(Side.SELL, d.getPrice()));
             subscribedOrderBook.getNearerBooks(bestSell, Side.BUY).forEach(d -> subscribedOrderBook.remove(Side.BUY, d.getPrice()));
         }
