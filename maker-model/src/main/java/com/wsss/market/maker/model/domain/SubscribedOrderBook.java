@@ -37,6 +37,13 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
                 .map(e->e.getKey())
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Depth remove(Side side, BigDecimal price) {
+        singleOrderBooks.values().forEach(book->book.getMap(side).remove(price));
+        return super.remove(side, price);
+    }
+
     @Override
     public void clearAll() {
         super.clearAll();
@@ -48,18 +55,20 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
         if(singleOrderBook == null) {
             return;
         }
-        clear(singleOrderBook.stream(Side.BUY).iterator());
-        clear(singleOrderBook.stream(Side.SELL).iterator());
+        clear(singleOrderBook.stream(Side.BUY).iterator(),Side.BUY);
+        clear(singleOrderBook.stream(Side.SELL).iterator(),Side.SELL);
     }
 
-    private void clear(Iterator<Map.Entry<BigDecimal,Depth>> iterator) {
+    private void clear(Iterator<Map.Entry<BigDecimal,Depth>> iterator,Side side) {
+        ConcurrentSkipListMap<BigDecimal,Depth> map = getMap(side);
         while (iterator.hasNext()) {
             Map.Entry<BigDecimal,Depth> entry = iterator.next();
             Depth depth = entry.getValue();
             BigDecimal sourceVolume = depth.getVolume();
-            depth.sub(sourceVolume);
-            if(BigDecimal.ZERO.compareTo(depth.getVolume()) == 0) {
-                iterator.remove();
+            Depth sumDepth = map.get(entry.getKey());
+            BigDecimal sumVolume = sumDepth.sub(sourceVolume).getVolume();
+            if(BigDecimal.ZERO.compareTo(sumVolume) == 0) {
+                map.remove(entry.getKey());
             }
         }
     }
@@ -92,7 +101,6 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
 
         ConcurrentSkipListMap<BigDecimal,Depth> singleMap = singleOrderBooks.get(source).getMap(side);
         if(singleMap.size() > makerConfig.getMemOrderBookLimit()) {
-            // 在多数据源的情况下，这可能导致最后的一些档位的volume少于实际多数据源的总和
             BigDecimal lastPrice = singleMap.lastKey();
             Depth depth = singleMap.remove(lastPrice);
             sumDepth = sumMap.get(lastPrice);
@@ -136,9 +144,10 @@ public class SubscribedOrderBook extends AbstractOrderBook<Depth> {
         book.update(Side.SELL,BigDecimal.valueOf(6L),BigDecimal.ONE,Source.Binance);
         book.update(Side.BUY,BigDecimal.valueOf(5L),BigDecimal.ONE,Source.Binance);
         book.update(Side.BUY,BigDecimal.valueOf(4L),BigDecimal.ONE,Source.Binance);
-        book.update(Side.BUY,BigDecimal.valueOf(3L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.BUY,new BigDecimal("3.00"),BigDecimal.ONE,Source.Binance);
         book.update(Side.BUY,BigDecimal.valueOf(2L),BigDecimal.ONE,Source.Binance);
         book.update(Side.BUY,BigDecimal.valueOf(1L),BigDecimal.ONE,Source.Binance);
+        book.update(Side.BUY,new BigDecimal("3"),BigDecimal.ONE,Source.Okex);
         System.out.println(book);
         System.out.println(book.getBestBuy());
         System.out.println(book.getBestSell());

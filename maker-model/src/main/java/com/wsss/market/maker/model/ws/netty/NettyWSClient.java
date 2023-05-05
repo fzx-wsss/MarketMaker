@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class NettyWSClient implements WSClient {
     private URI websocketURI;
     private WSListener wsListener;
-    private Channel channel;
+    private volatile Channel channel;
     private NioEventLoopGroup group = null;
     private static final NioEventLoopGroup reconnectGroup = new NioEventLoopGroup(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("reconnect").build());
     @Getter

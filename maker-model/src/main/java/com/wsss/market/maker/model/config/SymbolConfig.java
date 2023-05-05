@@ -25,7 +25,7 @@ public class SymbolConfig {
     public static Map<String, BigDecimal> bigDecimalMap = new CacheMap<>(k -> new BigDecimal(k));
 
     @Getter
-    @ApolloJsonValue("${market.maker.support.symbols:[galaxrp]}")
+    @ApolloJsonValue("${market.maker.support.symbols:[btcusdt]}")
     private Set<String> supportSymbols;
     @Getter
     @ApolloJsonValue("${market.maker.debug.symbols:[]}")
@@ -64,7 +64,7 @@ public class SymbolConfig {
     private Set<String> defaultSubSource;
     String SUBSCRIBE_SOURCE = SymbolConfig.LOKI_CONFIG + "subscribe";
 
-    @Value("${market.maker.subscribe.source.price.diff:100}")
+    @Value("${market.maker.subscribe.source.price.diff:1}")
     private long priceDiff;
 
     public long getPriceDiff(SymbolAoWithFeatureAndExtra symbolAo) {

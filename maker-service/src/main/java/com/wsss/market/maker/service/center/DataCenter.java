@@ -173,8 +173,10 @@ public class DataCenter {
     }
 
     private void registerDepth(Map<Source,List<String>> childSymbolMap) {
+        log.info("首次注册深度:{}",childSymbolMap);
         int groupSize = symbolConfig.getGroupSize();
-        childSymbolMap.forEach((source,symbolInfos)->{
+        childSymbolMap.forEach((source,symbols)->{
+            List<String> symbolInfos = new ArrayList<>(symbols);
             List<Subscriber> depthSubscribers = depthSubscriberMap.get(source);
             while (!symbolInfos.isEmpty()) {
                 for (Subscriber subscriber : depthSubscribers) {
@@ -213,8 +215,10 @@ public class DataCenter {
 
 
     private void registerTrade(Map<Source,List<String>> childSymbolMap) {
+        log.info("首次注册成交:{}",childSymbolMap);
         int groupSize = symbolConfig.getGroupSize();
-        childSymbolMap.forEach((source,symbolInfos)-> {
+        childSymbolMap.forEach((source,symbols)-> {
+            List<String> symbolInfos = new ArrayList<>(symbols);
             List<Subscriber> tradeSubscribers = tradeSubscriberMap.get(source);
             while (!symbolInfos.isEmpty()) {
                 for (Subscriber subscriber : tradeSubscribers) {

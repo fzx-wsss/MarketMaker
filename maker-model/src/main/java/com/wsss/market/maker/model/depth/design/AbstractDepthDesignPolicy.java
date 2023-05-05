@@ -3,6 +3,7 @@ package com.wsss.market.maker.model.depth.design;
 import com.superatomfin.share.tools.other.TimeSieve;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.domain.*;
+import com.wsss.market.maker.model.utils.BigDecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
@@ -154,7 +155,7 @@ public abstract class AbstractDepthDesignPolicy implements DepthDesignPolicy {
 
             int userOrderStrike = makerConfig.getUserBulkOrderStrikeOffBps(symbolInfo.getSymbolAo());
             // 10000 - 摆盘最佳买价 / (避让用户买单价格 * 10000) = 用户买单低于『市价』的万分比
-            if (BigDecimal.valueOf(10000).subtract(makerContext.getRealBestBuy().divide(userBestBid).multiply(BigDecimal.valueOf(10000))).intValue() > userOrderStrike) {
+            if (BigDecimalUtils.WAN.subtract(makerContext.getRealBestBuy().divide(userBestBid).multiply(BigDecimalUtils.WAN)).intValue() > userOrderStrike) {
                 log.info("{} userStrike {} order realBid:{} userBestBid:{}(amount:{})", symbolName, Side.BUY, makerContext.getRealBestBuy(), userBestBid, amount);
                 makerContext.addPlaceOrder(new Order(userBestBid, userBestBidVolume, Side.SELL));
             }
@@ -174,7 +175,7 @@ public abstract class AbstractDepthDesignPolicy implements DepthDesignPolicy {
             }
             int userOrderStrike = makerConfig.getUserBulkOrderStrikeOffBps(symbolInfo.getSymbolAo());
             // realBestSell / userBestAsk * 10000 - 10000 > userOrderStrike
-            if (makerContext.getRealBestSell().divide(userBestAsk).multiply(BigDecimal.valueOf(10000)).subtract(BigDecimal.valueOf(10000)).intValue() > userOrderStrike) {
+            if (makerContext.getRealBestSell().divide(userBestAsk).multiply(BigDecimalUtils.WAN).subtract(BigDecimalUtils.WAN).intValue() > userOrderStrike) {
                 log.warn("{} userStrike {} order realOffer:{} userBestAsk:{}(amount:{})", symbolName, Side.SELL, makerContext.getRealBestSell(), userBestAsk, amount);
                 makerContext.addPlaceOrder(new Order(userBestAsk, userBestAskVolume, Side.BUY));
             }
@@ -182,9 +183,9 @@ public abstract class AbstractDepthDesignPolicy implements DepthDesignPolicy {
     }
 
     protected MakerContext getMakerContext() {
-        int spreadFloat = makerConfig.getSpreadLowLimitMillesimal(null);
-        int oneSideGetOutBuyBps = makerConfig.getOneSideGetOutBps(null, Side.BUY);
-        int oneSideGetOutSellBps = makerConfig.getOneSideGetOutBps(null, Side.SELL);
+        int spreadFloat = makerConfig.getSpreadLowLimitMillesimal(symbolInfo.getSymbolAo());
+        int oneSideGetOutBuyBps = makerConfig.getOneSideGetOutBps(symbolInfo.getSymbolAo(), Side.BUY);
+        int oneSideGetOutSellBps = makerConfig.getOneSideGetOutBps(symbolInfo.getSymbolAo(), Side.SELL);
         long floatDownward = oneSideGetOutBuyBps > 0 ? 10000 - oneSideGetOutBuyBps : 10000 - spreadFloat / 2;
         long floatUpward = oneSideGetOutSellBps > 0 ? 10000 + oneSideGetOutSellBps : 10000 + spreadFloat / 2;
         BigDecimal bestBuy = getSubscribedOrderBook().getBestBuy();
@@ -196,8 +197,8 @@ public abstract class AbstractDepthDesignPolicy implements DepthDesignPolicy {
         return MakerContext.builder()
                 .realBestBuy(bestBuy)
                 .realBestSell(bestSell)
-                .spreadBestBuy(bestBuy.multiply(BigDecimal.valueOf(floatDownward)).divide(BigDecimal.valueOf(10000)))
-                .spreadBestSell(bestSell.multiply(BigDecimal.valueOf(floatUpward)).divide(BigDecimal.valueOf(10000)))
+                .spreadBestBuy(bestBuy.multiply(BigDecimalUtils.convert(floatDownward)).divide(BigDecimalUtils.WAN))
+                .spreadBestSell(bestSell.multiply(BigDecimalUtils.convert(floatUpward)).divide(BigDecimalUtils.WAN))
                 .build();
     }
 }

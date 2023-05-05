@@ -4,6 +4,7 @@ import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.domain.Trade;
+import com.wsss.market.maker.model.utils.BigDecimalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ import java.math.BigDecimal;
 public class TriangleTradeDesignPolicy extends AbstractTradeDesignPolicy {
     private SubscribedOrderBook abOrderBook;
     private String cbSymbol;
-    private BigDecimal TWO = new BigDecimal("2");
+
 
     public TriangleTradeDesignPolicy(SymbolInfo symbolInfo) {
         super(symbolInfo);
@@ -37,7 +38,7 @@ public class TriangleTradeDesignPolicy extends AbstractTradeDesignPolicy {
         int priceScale = symbolInfo.getSymbolAo().getShowPriceScale();
         int volumeScale = symbolInfo.getSymbolAo().getShowVolumeScale();
         int round = trade.getTrendSide() == Side.BUY ? BigDecimal.ROUND_FLOOR : BigDecimal.ROUND_CEILING;
-        BigDecimal abPrice = abOrderBook.getBestBuy().add(abOrderBook.getBestSell()).divide(TWO,priceScale,round);
+        BigDecimal abPrice = abOrderBook.getBestBuy().add(abOrderBook.getBestSell()).divide(BigDecimalUtils.ER,priceScale,round);
         BigDecimal cbPrice = trade.getPrice();
 
         BigDecimal caPrice = cbPrice.divide(abPrice, priceScale,round);

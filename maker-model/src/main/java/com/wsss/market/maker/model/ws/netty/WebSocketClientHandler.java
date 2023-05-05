@@ -7,7 +7,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
-import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
@@ -33,7 +32,6 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<FullHttp
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpResponse msg) throws Exception {
         Channel ch = ctx.channel();
-        log.info("服务端的消息:{}", msg.content().toString(CharsetUtil.UTF_8));
         //进行握手操作
         if (!this.handshaker.isHandshakeComplete()) {
             try {

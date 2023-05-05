@@ -11,6 +11,7 @@ import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.limit.MakerLimitPolicy;
+import com.wsss.market.maker.model.utils.BigDecimalUtils;
 import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.service.center.DataCenter;
 import com.wsss.market.maker.service.subscribe.DepthListenTask;
@@ -37,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 @Scope("prototype")
 public class DepthProcessThread implements Runnable {
     private BlockingQueue<String> queue = new LinkedBlockingQueue(10000);
-    private static final BigDecimal WAN = new BigDecimal(10000);
     @Resource
     private DataCenter dataCenter;
     @Resource
@@ -154,9 +154,9 @@ public class DepthProcessThread implements Runnable {
         BigDecimal bestBuy = subscribedOrderBook.getBestBuy();
         BigDecimal bestSell = subscribedOrderBook.getBestSell();
         if (Objects.nonNull(bestBuy) && Objects.nonNull(bestSell) && bestBuy.compareTo(bestSell) >= 0) {
-            long diff = bestBuy.subtract(bestSell).multiply(WAN).longValue();
+            long diff = bestBuy.subtract(bestSell).divide(bestSell,4,BigDecimal.ROUND_CEILING).multiply(BigDecimalUtils.WAN).longValue();
             if(diff > symbolConfig.getPriceDiff(symbolInfo.getSymbolAo())) {
-                log.warn("{} price diff is bestBuy:{},{}; bestSell:{},{}",symbolInfo.getSymbol(),
+                log.warn("{} price diff:{} bestBuy:{},{}; bestSell:{},{}",symbolInfo.getSymbol(),diff,
                         bestBuy,subscribedOrderBook.getSourceByPrice(bestBuy,Side.BUY),
                         bestSell,subscribedOrderBook.getSourceByPrice(bestSell,Side.SELL)
                 );

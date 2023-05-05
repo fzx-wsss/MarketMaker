@@ -8,6 +8,8 @@ import com.wsss.market.maker.service.subscribe.AbstractSubscriber;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.jackson.JsonNode;
 
+import java.util.Collection;
+
 @Slf4j
 public abstract class OkAbstractSubscriber extends AbstractSubscriber {
 
@@ -24,8 +26,8 @@ public abstract class OkAbstractSubscriber extends AbstractSubscriber {
     private CacheMap<String,String> convertSymbolName = new CacheMap<>(k->k.replaceAll("-","").toLowerCase());
 
     @Override
-    public void init() {
-        super.init();
+    protected void reRegister(Collection<String> symbols) {
+        super.reRegister(symbols);
         // ok每秒只能建立一个连接
         Sleep.sleepSeconds(1);
     }
