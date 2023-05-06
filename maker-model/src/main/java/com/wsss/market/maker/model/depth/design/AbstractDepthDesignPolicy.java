@@ -190,6 +190,14 @@ public abstract class AbstractDepthDesignPolicy implements DepthDesignPolicy {
         long floatUpward = oneSideGetOutSellBps > 0 ? 10000 + oneSideGetOutSellBps : 10000 + spreadFloat / 2;
         BigDecimal bestBuy = getSubscribedOrderBook().getBestBuy();
         BigDecimal bestSell = getSubscribedOrderBook().getBestSell();
+
+        if(bestBuy.compareTo(bestSell) >= 0) {
+            // 盘口交叉了的话就将价格反过来
+            BigDecimal oneStep = BigDecimal.valueOf(1, symbolInfo.getSymbolAo().getShowPriceScale());
+            BigDecimal temp = bestBuy;
+            bestBuy = bestSell.subtract(oneStep);
+            bestSell = temp.add(oneStep);
+        }
         if (bestSell == null || bestBuy == null) {
             log.warn("bbo is empty! symbol:{}, bestBuy:{}, bestSell:{}", symbolInfo.getSymbol(), bestBuy, bestSell);
             return null;

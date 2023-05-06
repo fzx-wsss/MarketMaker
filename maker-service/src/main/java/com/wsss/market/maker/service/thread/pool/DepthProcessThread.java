@@ -154,7 +154,7 @@ public class DepthProcessThread implements Runnable {
         BigDecimal bestBuy = subscribedOrderBook.getBestBuy();
         BigDecimal bestSell = subscribedOrderBook.getBestSell();
         if (Objects.nonNull(bestBuy) && Objects.nonNull(bestSell) && bestBuy.compareTo(bestSell) >= 0) {
-            long diff = bestBuy.subtract(bestSell).divide(bestSell,4,BigDecimal.ROUND_CEILING).multiply(BigDecimalUtils.WAN).longValue();
+            long diff = bestBuy.subtract(bestSell).divide(bestSell,4,BigDecimal.ROUND_HALF_UP).multiply(BigDecimalUtils.WAN).longValue();
             if(diff > symbolConfig.getPriceDiff(symbolInfo.getSymbolAo())) {
                 log.warn("{} price diff:{} bestBuy:{},{}; bestSell:{},{}",symbolInfo.getSymbol(),diff,
                         bestBuy,subscribedOrderBook.getSourceByPrice(bestBuy,Side.BUY),
@@ -162,8 +162,8 @@ public class DepthProcessThread implements Runnable {
                 );
             }
             Monitor.timer("source_price_diff").end(diff);
-            subscribedOrderBook.getNearerBooks(bestBuy, Side.SELL).forEach(d -> subscribedOrderBook.remove(Side.SELL, d.getPrice()));
-            subscribedOrderBook.getNearerBooks(bestSell, Side.BUY).forEach(d -> subscribedOrderBook.remove(Side.BUY, d.getPrice()));
+//            subscribedOrderBook.getNearerBooks(bestBuy, Side.SELL).forEach(d -> subscribedOrderBook.remove(Side.SELL, d.getPrice()));
+//            subscribedOrderBook.getNearerBooks(bestSell, Side.BUY).forEach(d -> subscribedOrderBook.remove(Side.BUY, d.getPrice()));
         }
     }
 }
