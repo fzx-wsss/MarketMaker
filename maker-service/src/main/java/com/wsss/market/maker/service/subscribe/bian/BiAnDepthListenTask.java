@@ -1,5 +1,6 @@
 package com.wsss.market.maker.service.subscribe.bian;
 
+import com.superatomfin.framework.monitor.Monitor;
 import com.wsss.market.maker.model.domain.Side;
 import com.wsss.market.maker.model.domain.Source;
 import com.wsss.market.maker.model.domain.SubscribedOrderBook;
@@ -62,18 +63,28 @@ public class BiAnDepthListenTask implements DepthListenTask {
     }
 
     private void initOrderBook(String symbol, SubscribedOrderBook subscribedOrderBook) throws IOException {
-        //初始化
-        String url = ConfigCenter.getApolloConfig().getBinanceDepthUrl();
-        Map<String,String> map = new HashMap<>();
-        map.put("symbol",symbol.toUpperCase());
-        map.put("limit",ConfigCenter.getApolloConfig().getLimit());
-        String snap = HttpUtils.doGetJson(url,null,map);
+        String snap = requestHttpDepth(symbol);
         JsonNode root = JacksonMapper.getInstance().readTree(snap);
         JsonNode bids = root.get("bids");
         JsonNode asks = root.get("asks");
         long lastId = root.get("lastUpdateId").asLong();
         subscribedOrderBook.clear(Source.Binance);
         updateOrderBook(lastId,bids,asks, subscribedOrderBook);
+    }
+
+    private String requestHttpDepth(String symbol) throws IOException {
+        Monitor.TimeContext context = Monitor.timer("bian_req_http_depth");
+        try {
+            //初始化
+            String url = ConfigCenter.getApolloConfig().getBinanceDepthUrl();
+            Map<String,String> map = new HashMap<>();
+            map.put("symbol",symbol.toUpperCase());
+            map.put("limit",ConfigCenter.getApolloConfig().getLimit());
+            String snap = HttpUtils.doGetJson(url,null,map);
+            return snap;
+        } finally {
+            context.end();
+        }
     }
 
     private void updateOrderBook(long eventId, JsonNode buys,JsonNode sells, SubscribedOrderBook subscribedOrderBook) {
