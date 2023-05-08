@@ -44,7 +44,7 @@ public class BiAnDepthListenTask implements DepthListenTask {
 
             long eventId = subscribedOrderBook.getEventId(Source.Binance);
             if(evtFirstId > eventId + 1 || eventId == 0) {
-                log.info("{} Bian evtFirstId:{},evtLastId:{},orderBook eventId:{}",symbol,evtFirstId,evtLastId, eventId);
+                log.info("{} init Bian evtFirstId:{},evtLastId:{},orderBook eventId:{}",symbol,evtFirstId,evtLastId, eventId);
                 initOrderBook(symbol, subscribedOrderBook);
             }
             if(evtLastId <= eventId) {
