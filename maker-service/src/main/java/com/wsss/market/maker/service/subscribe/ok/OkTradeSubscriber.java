@@ -18,7 +18,11 @@ public class OkTradeSubscriber extends OkAbstractSubscriber {
     protected void doRegisterMsg(Collection<String> symbols) {
         OkMsg msg = OkMsg.buildSubscribe();
         symbols.forEach(s -> {
-            msg.addArg("trades", symbolName.get(s));
+            try {
+                msg.addArg("trades",symbolName.get(s));
+            } catch (Exception e) {
+                log.error("",e);
+            }
         });
 
         String sendMsg = JsonUtils.encode(msg);
@@ -29,7 +33,11 @@ public class OkTradeSubscriber extends OkAbstractSubscriber {
     protected void doRemoveMsg(Collection<String> symbols) {
         OkMsg msg = OkMsg.buildUnsubscribe();
         symbols.forEach(s -> {
-            msg.addArg("trades", symbolName.get(s));
+            try {
+                msg.addArg("trades",symbolName.get(s));
+            } catch (Exception e) {
+                log.error("",e);
+            }
         });
 
         String sendMsg = JsonUtils.encode(msg);
