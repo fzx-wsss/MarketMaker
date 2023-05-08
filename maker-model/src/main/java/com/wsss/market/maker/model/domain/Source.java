@@ -7,6 +7,8 @@ public enum Source {
            "com.wsss.market.maker.service.subscribe.bian.BiAnTradeSubscriber"),
     Okex("com.wsss.market.maker.service.subscribe.ok.OkDepthSubscriber",
             "com.wsss.market.maker.service.subscribe.ok.OkTradeSubscriber"),
+    Bybit("com.wsss.market.maker.service.subscribe.bybit.BybitDepthSubscriber",
+            "com.wsss.market.maker.service.subscribe.bybit.BybitTradeSubscriber"),
     Huobi,
     CoinbasePro,
     Bitrue,

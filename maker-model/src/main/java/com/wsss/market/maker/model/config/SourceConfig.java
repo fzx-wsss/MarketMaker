@@ -28,6 +28,9 @@ public class SourceConfig {
     @Value("${ok.steam.depth.url:wss://wsaws.okx.com:8443/ws/v5/public}")
     private String okSteamUrl;
 
+    @Value("${bybit.steam.depth.url:wss://stream.bybit.com:443/v5/public/spot}")
+    private String bybitSteamUrl;
+
     public static SourceConfig getInstance() {
         if(cache == null) {
             cache = ApplicationUtils.getSpringBean(SourceConfig.class);
