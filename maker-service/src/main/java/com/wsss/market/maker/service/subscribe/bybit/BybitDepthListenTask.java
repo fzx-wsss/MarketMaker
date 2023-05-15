@@ -43,23 +43,26 @@ public class BybitDepthListenTask implements DepthListenTask {
         JsonNode bids = json.get("data").get("b");
         JsonNode asks = json.get("data").get("a");
         long lastId = json.get("ts").asLong();
-//        int seq = json.get("data").get("seq").asInt();
-//        int u = json.get("data").get("u").asInt();
-
-        updateOrderBook(lastId,bids,asks, subscribedOrderBook);
+        int seq = json.get("data").get("seq").asInt();
+        long u = json.get("data").get("u").asInt();
+        long eventId = subscribedOrderBook.getEventId(Source.Bybit);
+        if(eventId != 0 && u != eventId + 1) {
+            log.warn("u:{},eventId:{}",u,lastId);
+        }
+        updateOrderBook(u,bids,asks, subscribedOrderBook);
     }
 
     private void updateOrderBook(long eventId, JsonNode buys,JsonNode sells, SubscribedOrderBook subscribedOrderBook) {
         updateOrderBook(Side.BUY,buys, subscribedOrderBook);
         updateOrderBook(Side.SELL,sells, subscribedOrderBook);
-        subscribedOrderBook.setEventId(Source.Okex,eventId);
+        subscribedOrderBook.setEventId(Source.Bybit,eventId);
     }
 
     private void updateOrderBook(Side side, JsonNode priceLevels, SubscribedOrderBook subscribedOrderBook) {
         for (JsonNode pair : priceLevels) {
             BigDecimal price = new BigDecimal(pair.get(0).asText());
             BigDecimal volume = new BigDecimal(pair.get(1).asText());
-            if(!subscribedOrderBook.update(side, price, volume, Source.Okex)) {
+            if(!subscribedOrderBook.update(side, price, volume, Source.Bybit)) {
                 // 当价格超出最大档位时跳出循环，不在进行后续更新
                 // 可以这么操作的前提是，订单簿的档位是有序的
                 break;

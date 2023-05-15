@@ -40,6 +40,10 @@ public abstract class OkAbstractSubscriber extends AbstractSubscriber {
     @Override
     public void receive(String msg) {
         try {
+            if("pong".equals(msg)) {
+                log.warn("receive pong msg");
+                return;
+            }
             JsonNode root = com.wsss.market.maker.utils.JacksonMapper.getInstance().readTree(msg);
             if (!root.has("arg")) {
                 log.warn("receive unknown msg: {}",root);
@@ -57,6 +61,12 @@ public abstract class OkAbstractSubscriber extends AbstractSubscriber {
             log.error("OkWSListener receive error:{}",msg);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public synchronized void checkSelf() {
+        sendMsg("ping");
+        super.checkSelf();
     }
 
     protected abstract void notifyProcessThread(SymbolInfo symbolInfo, String childSymbolName, JsonNode data);

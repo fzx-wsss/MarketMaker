@@ -28,7 +28,7 @@ public class SymbolConfig {
     @ApolloJsonValue("${market.maker.support.symbols:[btcusdt]}")
     private Set<String> supportSymbols;
     @Getter
-    @ApolloJsonValue("${market.maker.debug.symbols:[btcusdt]}")
+    @ApolloJsonValue("${market.maker.debug.symbols:[]}")
     private Set<String> debugSymbols;
     @ApolloJsonValue("${market.maker.mapping.symbols:{}}")
     private Map<String,String> mappingSymbols;
@@ -60,7 +60,7 @@ public class SymbolConfig {
     @Value("${market.maker.subscribe.max.receive.time:300}")
     private int maxReceiveTime;
 
-    @Value("${market.maker.subscribe.default.sub.source:Bybit}")
+    @Value("${market.maker.subscribe.default.sub.source:Okex}")
     private Set<String> defaultSubSource;
     String SUBSCRIBE_SOURCE = SymbolConfig.LOKI_CONFIG + "subscribe";
 

@@ -21,6 +21,15 @@ public class BybitSubMsg {
         msg.op = "unsubscribe";
         return msg;
     }
+    public static BybitSubMsg buildPing() {
+        BybitSubMsg msg = new BybitSubMsg();
+        msg.op = "ping";
+        return msg;
+    }
+
+    public int size() {
+        return args.size();
+    }
 
     public void addArg(String topic) {
         args.add(topic);

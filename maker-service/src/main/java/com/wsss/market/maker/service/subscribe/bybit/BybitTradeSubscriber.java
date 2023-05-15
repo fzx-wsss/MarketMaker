@@ -20,23 +20,39 @@ public class BybitTradeSubscriber extends BybitAbstractSubscriber {
     @Override
     protected void doRegisterMsg(Collection<String> symbols) {
         BybitSubMsg msg = BybitSubMsg.buildSubscribe();
-        symbols.forEach(s -> {
-            msg.addArg("publicTrade." + s.toUpperCase());
-        });
+        for(String symbol : symbols) {
+            msg.addArg("publicTrade."+symbol.toUpperCase());
+            if(msg.size() < 10) {
+                continue;
+            }
+            String sendMsg = JsonUtils.encode(msg);
+            super.sendMsg(sendMsg);
+            msg = BybitSubMsg.buildSubscribe();
+        }
 
-        String sendMsg = JsonUtils.encode(msg);
-        super.sendMsg(sendMsg);
+        if(msg.size() > 0) {
+            String sendMsg = JsonUtils.encode(msg);
+            super.sendMsg(sendMsg);
+        }
     }
 
     @Override
     protected void doRemoveMsg(Collection<String> symbols) {
         BybitSubMsg msg = BybitSubMsg.buildUnsubscribe();
-        symbols.forEach(s -> {
-            msg.addArg("publicTrade." + s.toUpperCase());
-        });
+        for(String symbol : symbols) {
+            msg.addArg("publicTrade."+symbol.toUpperCase());
+            if(msg.size() < 10) {
+                continue;
+            }
+            String sendMsg = JsonUtils.encode(msg);
+            super.sendMsg(sendMsg);
+            msg = BybitSubMsg.buildUnsubscribe();
+        }
 
-        String sendMsg = JsonUtils.encode(msg);
-        super.sendMsg(sendMsg);
+        if(msg.size() > 0) {
+            String sendMsg = JsonUtils.encode(msg);
+            super.sendMsg(sendMsg);
+        }
     }
 
     @Override
@@ -44,6 +60,11 @@ public class BybitTradeSubscriber extends BybitAbstractSubscriber {
         JsonNode root = JsonUtils.decode(msg);
         if (!root.has("data")) {
             log.warn("receive unknown msg: {}",root);
+            if(root.get("success") != null && "false".equals(root.get("success").asText())) {
+                String symbol = StringUtils.toLowerSymbol(root.get("ret_msg").asText().replaceAll("Invalid symbol :\\[publicTrade\\.(.+?)\\]","$1"));
+                subscribedSymbol.remove(symbol);
+                log.warn("不支持币对:{},移除监听",symbol);
+            }
             return;
         }
         String topic = root.get("topic").asText();

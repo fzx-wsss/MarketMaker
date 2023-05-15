@@ -30,7 +30,7 @@ public class MakerConfig {
      * 内存中保存的订阅的最大深度限制
      */
     @Getter
-    @Value("${mem.order.book.limit:10}")
+    @Value("${mem.order.book.limit:100}")
     private int memOrderBookLimit;
 
     /**
