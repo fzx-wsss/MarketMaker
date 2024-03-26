@@ -8,33 +8,24 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>maker-service</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>maker-bitrue</module>
+        <module>maker-binance</module>
+        <module>maker-okex</module>
+        <module>maker-bybit</module>
+    </modules>
+    <artifactId>maker-inner-supplier</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.wsss</groupId>
             <artifactId>maker-inner-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.superatomfin</groupId>
-            <artifactId>share-tools</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.wsss</groupId>
-            <artifactId>maker-model</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.wsss</groupId>
-            <artifactId>maker-rpc</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

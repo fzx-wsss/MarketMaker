@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>maker-service</artifactId>
+    <artifactId>maker-inner-api</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -20,21 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.wsss</groupId>
-            <artifactId>maker-inner-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.superatomfin</groupId>
-            <artifactId>share-tools</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.wsss</groupId>
             <artifactId>maker-model</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.wsss</groupId>
-            <artifactId>maker-rpc</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

@@ -2,6 +2,7 @@ package com.wsss.market.maker.service.thread.pool;
 
 import com.superatomfin.framework.monitor.Monitor;
 import com.superatomfin.share.tools.other.Sleep;
+import com.wsss.market.maker.inner.api.receive.TradeListenTask;
 import com.wsss.market.maker.model.config.TradeConfig;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.SymbolInfo;
@@ -9,7 +10,6 @@ import com.wsss.market.maker.model.domain.Trade;
 import com.wsss.market.maker.model.limit.SlidingTimeMakerLimitPolicy;
 import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.service.center.DataCenter;
-import com.wsss.market.maker.service.subscribe.TradeListenTask;
 import com.wsss.market.maker.service.task.MakeTradeTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;

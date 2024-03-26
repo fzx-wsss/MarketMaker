@@ -2,6 +2,7 @@ package com.wsss.market.maker.service.thread.pool;
 
 import com.superatomfin.framework.monitor.Monitor;
 import com.superatomfin.share.tools.other.TimeSieve;
+import com.wsss.market.maker.inner.api.receive.DepthListenTask;
 import com.wsss.market.maker.model.config.MakerConfig;
 import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.depth.design.DepthDesignPolicy;
@@ -14,7 +15,6 @@ import com.wsss.market.maker.model.limit.MakerLimitPolicy;
 import com.wsss.market.maker.model.utils.BigDecimalUtils;
 import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.service.center.DataCenter;
-import com.wsss.market.maker.service.subscribe.DepthListenTask;
 import com.wsss.market.maker.service.task.AbstractAsyncTask;
 import com.wsss.market.maker.service.task.CompositeTask;
 import com.wsss.market.maker.service.task.MakeOrderTask;

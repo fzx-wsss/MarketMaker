@@ -1,11 +1,12 @@
 package com.wsss.market.maker.service.center;
 
+import com.wsss.market.maker.inner.api.data.SymbolQueryService;
+import com.wsss.market.maker.inner.api.receive.Subscriber;
 import com.wsss.market.maker.model.config.SymbolConfig;
 import com.wsss.market.maker.model.domain.CacheMap;
 import com.wsss.market.maker.model.domain.Source;
 import com.wsss.market.maker.model.domain.SymbolInfo;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
-import com.wsss.market.maker.service.subscribe.Subscriber;
 import com.wsss.market.maker.service.task.CancelOwnerOrderTask;
 import com.wsss.market.maker.service.task.QueryOwnerOrderTask;
 import com.wsss.market.maker.service.thread.pool.MarkerMakerThreadPool;
@@ -19,7 +20,7 @@ import java.util.concurrent.Future;
 
 @Slf4j
 @Component
-public class DataCenter {
+public class DataCenter implements SymbolQueryService {
     @Resource
     private SymbolConfig symbolConfig;
     @Resource

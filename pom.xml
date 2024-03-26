@@ -13,10 +13,11 @@
     <packaging>pom</packaging>
     <modules>
         <module>maker-model</module>
-        <module>maker-rpc</module>
         <module>maker-deploy</module>
         <module>maker-portal</module>
         <module>maker-service</module>
+        <module>maker-inner-api</module>
+        <module>maker-inner-supplier</module>
     </modules>
 
     <groupId>com.wsss</groupId>

@@ -1,6 +1,8 @@
 package com.wsss.market.maker.service.thread.pool;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.wsss.market.maker.inner.api.data.ThreadPool;
+import com.wsss.market.maker.inner.api.receive.TradeListenTask;
 import com.wsss.market.maker.model.utils.ApplicationUtils;
 import com.wsss.market.maker.model.utils.Perf;
 import com.wsss.market.maker.service.task.AbstractAsyncTask;
@@ -16,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 @DependsOn("applicationUtils")
-public class MarkerMakerThreadPool {
+public class MarkerMakerThreadPool implements ThreadPool {
     // 用于深度计算的线程
     private DepthProcessThread[] depthProcessThreads = new DepthProcessThread[Runtime.getRuntime().availableProcessors()];
     // 用于成交计算的线程
@@ -119,5 +121,15 @@ public class MarkerMakerThreadPool {
                 return null;
             }
         });
+    }
+
+    @Override
+    public void offerDepth(String symbol, String msg) {
+        getDepthProcessThread(symbol).offer(msg);
+    }
+
+    @Override
+    public void offerTrade(String symbol, TradeListenTask msg) {
+        getTradeProcessThread(symbol).offer(msg);
     }
 }
